@@ -1,0 +1,47 @@
+<html>
+
+<head>
+  <title>AdHoc Networks Exam Portal</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="shortcut icon" type="image/png" href="/images/favicon.ico" />
+</head>
+
+<body>
+
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar navbar-dark navbar-expand-lg sticky-top" style="background-color: #1a202c;">
+    <a class="navbar-brand" href="/">
+      <img src="/images/favicon.ico" width="30" height="30" class="d-inline-block align-top" alt="Adhoc Networks Logo" loading="lazy"> <span class="brand-heading">AdHocNW Exams</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapsable" aria-controls="navbarCollapsable" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapsable">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Account
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <% if (isLogined === false) { %>
+            <a class="dropdown-item" href="/login">Login</a>
+            <a class="dropdown-item" href="/signup">Signup</a>
+            <% } else { %>
+            <a class="dropdown-item" href="/dashboard">Dashboard</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="/logout">Logout</a>
+            <% } %>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+      </ul>
+    </div>
+  </nav>

@@ -1,0 +1,128 @@
+<%- include("partials/header") -%>
+<!-- SPLIT SCREEN -->
+<div class="page-container">
+
+  <div class="panel-container">
+
+    <!-- LEFT PANNEL -->
+    <div class="panel-left">
+      <div class="container-fluid text-wrap question-md">
+        <h1>
+          <a id="user-content-aws-ec2-voice-automation" class="anchor" href="#aws-ec2-voice-automation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>AWS EC2 Voice Automation</h1>
+        <p>Control states of your EC2 instances using voice.</p>
+        <h2>
+          <a id="user-content-getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h2>
+        <p>These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.</p>
+        <h3>
+          <a id="user-content-prerequisites" class="anchor" href="#prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prerequisites</h3>
+        <p>Install the required libraries</p>
+        <pre><code>pip install boto3
+pip install SpeechRecognition
+pip install gtts
+pip install playsound
+</code></pre>
+        <p>Install PyAudio</p>
+        <pre><code>pip install pyaudio
+</code></pre>
+        <p>If the above installation gives error, download compatible python library from the link :
+          <a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio" rel="nofollow">PyAudio</a></p>
+        <p>Run CMD and go to the download location of the file and run the command(File name may differ).</p>
+        <pre><code>pip install PyAudio‑0.2.11‑cp38‑cp38‑win32.whl
+</code></pre>
+        <h3>
+          <a id="user-content-setting-up" class="anchor" href="#setting-up" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setting up</h3>
+        <p>A step by step series that tell you how to get a development env running</p>
+        <p>Step 1</p>
+        <blockquote>
+          <p>Visit <a href="https://console.aws.amazon.com/iam/home#/users" rel="nofollow">IAM Management Console</a> and add <strong>New User</strong></p>
+        </blockquote>
+        <blockquote>
+          <p>Give it <strong>Programmatic access</strong> and click Next</p>
+        </blockquote>
+        <blockquote>
+          <p>Set <strong>AdministratorAccess</strong> under <strong>Attach existing policies directly</strong> (Or according to needs)</p>
+        </blockquote>
+        <blockquote>
+          <p>Click next and create new user</p>
+        </blockquote>
+        <p>Step 2</p>
+        <blockquote>
+          <p>Download and save the <strong>credentials.csv</strong> file to get <em>access key id</em> and <em>secret access key</em></p>
+        </blockquote>
+        <p>Step 3</p>
+        <blockquote>
+          <p>Clone the repository on your local system</p>
+        </blockquote>
+        <p>Step 4</p>
+        <blockquote>
+          <p>Copy and paste the <em>access key id</em> and <em>secret access key</em> into the <strong>cred.json</strong> file in the project directory</p>
+        </blockquote>
+        <h2>
+          <a id="user-content-running-the-system" class="anchor" href="#running-the-system" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Running the system</h2>
+        <p>To Run the program</p>
+        <h4>
+          <a id="user-content-on-windows" class="anchor" href="#on-windows" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>On Windows</h4>
+        <p>Open CMD and navigate to project directory and run the following command</p>
+        <pre><code>python "aws_voice - windows.py"
+</code></pre>
+        <h4>
+          <a id="user-content-on-linux" class="anchor" href="#on-linux" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>On Linux</h4>
+        <p>Open terminal and navigate to project directory and run the following command</p>
+        <pre><code>python "aws_voice - linux.py"
+</code></pre>
+        <h2>
+          <a id="user-content-developers" class="anchor" href="#developers" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Developers</h2>
+        <p><a href="https://www.linkedin.com/in/riya-soni-3bb5111a0/" rel="nofollow">Riya Soni</a></p>
+        <p><a href="https://www.linkedin.com/in/rhythm-bhiwani/" rel="nofollow">Rhythm Bhiwani</a></p>
+        <h2>
+          <a id="user-content-demo-video" class="anchor" href="#demo-video" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Demo Video</h2>
+        <p><a href="http://www.youtube.com/watch?feature=player_embedded&amp;v=BosDrdC1IdA" rel="nofollow">Click to see Demo</a></p>
+        <nav aria-label="Page Navigation">
+          <ul class="pagination justify-content-end">
+            <li class="page-item">
+              <a class="page-link" href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+                <span class="sr-only">Previous</span>
+              </a>
+            </li>
+            <li class="page-item"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item">
+              <a class="page-link" href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+                <span class="sr-only">Next</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <!-- SPLITTER DIV -->
+    <div class="splitter">
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="panel-right">
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Terminal 1</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Terminal 2</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Bootstrap</a>
+        </li>
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab"><iframe src="https://18.221.103.44:6969/" width="100%" height="100%" style="border:none;"></iframe></div>
+        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab"><iframe src="https://18.221.103.44:6969/" width="100%" height="100%" style="border:none;"></iframe></div>
+        <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab"><iframe src="https://katakoda.com" width="100%" height="100%" style="border:none;"></iframe></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include("partials/footer") -%>

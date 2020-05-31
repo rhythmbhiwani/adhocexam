@@ -1,0 +1,7 @@
+<%- include("partials/header") -%>
+<% const loginMethod = user.loginMethod; %>
+<img class="img-fluid rounded mx-auto d-block" src="<%=user[loginMethod].profilePicture%>" alt="Profile Picture">
+<%=user[loginMethod].fullname%>
+<h1><%=user[loginMethod].email%></h1>
+<%- include("partials/footerbar") -%>
+<%- include("partials/footer") -%>
