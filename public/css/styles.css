@@ -79,34 +79,34 @@ label {
 .question-md code {}
 
 /* SIGNUP AND LOGIN PAGE */
-.form-control {
+.login-and-signup-class .form-control {
   font-size: 16px;
   transition: all 0.4s;
   box-shadow: none;
 }
 
-.form-control:focus {
+.login-and-signup-class .form-control:focus {
   border-color: #5cb85c;
 }
 
-.form-control, .btn {
+.login-and-signup-class .form-control, .login-and-signup-class .social-btn {
   border-radius: 50px;
   outline: none !important;
 }
 
-.signup-form {
+.login-and-signup-class .signup-form {
   width: 500px;
   margin: 0 auto;
   padding: 30px 0;
 }
 
 @media only screen and (max-width: 600px) {
-  .signup-form {
+  .login-and-signup-class .signup-form {
     width: 100%;
   }
 }
 
-.signup-form form {
+.login-and-signup-class .signup-form form {
   border-radius: 5px;
   margin-bottom: 20px;
   background: #fff;
@@ -114,51 +114,51 @@ label {
   padding: 40px;
 }
 
-.signup-form a {
+.login-and-signup-class .signup-form a {
   color: #5cb85c;
 }
 
-.signup-form h2 {
+.login-and-signup-class .signup-form h2 {
   text-align: center;
   font-size: 34px;
   margin: 10px 0 15px;
 }
 
-.signup-form .hint-text {
+.login-and-signup-class .signup-form .hint-text {
   color: #999;
   text-align: center;
   margin-bottom: 20px;
 }
 
-.signup-form .form-group {
+.login-and-signup-class .signup-form .form-group {
   margin-bottom: 20px;
 }
 
-.signup-form .btn {
+.login-and-signup-class .signup-form .btn {
   font-size: 18px;
   line-height: 26px;
   font-weight: bold;
   text-align: center;
 }
 
-.signup-btn {
+.login-and-signup-class .signup-btn {
   text-align: center;
   border-color: #5cb85c;
   transition: all 0.4s;
 }
 
-.signup-btn:hover {
+.login-and-signup-class .signup-btn:hover {
   background: #5cb85c;
   opacity: 0.8;
 }
 
-.or-seperator {
+.login-and-signup-class .or-seperator {
   margin: 50px 0 15px;
   text-align: center;
   border-top: 1px solid #e0e0e0;
 }
 
-.or-seperator b {
+.login-and-signup-class .or-seperator b {
   padding: 0 10px;
   width: 40px;
   height: 40px;
@@ -174,7 +174,7 @@ label {
   z-index: 1;
 }
 
-.social-btn .btn {
+.login-and-signup-class .social-btn .btn {
   color: #fff;
   margin: 10px 0 0 15px;
   font-size: 15px;
@@ -184,32 +184,86 @@ label {
   transition: all 0.4s;
 }
 
-.social-btn .btn:first-child {
+.login-and-signup-class .social-btn .btn:first-child {
   margin-left: 0;
 }
 
-.social-btn .btn:hover {
+.login-and-signup-class .social-btn .btn:hover {
   opacity: 0.8;
 }
 
-.social-btn .btn-primary {
+.login-and-signup-class .social-btn .btn-primary {
   background: #507cc0;
 }
 
-.social-btn .btn-info {
+.login-and-signup-class .social-btn .btn-info {
   background: #64ccf1;
 }
 
-.social-btn .btn-danger {
+.login-and-signup-class .social-btn .btn-danger {
   background: #df4930;
 }
 
-.social-btn .btn i {
+.login-and-signup-class .social-btn .btn i {
   float: left;
   margin: 3px 10px;
   font-size: 20px;
 }
 
+/* DASHBOARD CSS */
+.profile-image {
+  max-width: 40%;
+  min-width: 20%;
+  padding: 5%;
+}
+
+/* PACMAN HORIZONAL RULE */
+hr.pacman {
+  border: 0;
+  height: 25px;
+  background-image: url('http://www.formget.com/wp-content/uploads/2014/12/type_3.png');
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* RULES MODEL */
+.rules-model {
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+/* PROFILE PAGE */
+.profile-form {}
+.circular {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+}
+.circular img {
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
 
 
-/* ERROR 404 PAGE */
+.profile-form-container {
+  width: 550px;
+}
+@media (max-width: 600px) {
+  .profile-form-data-to-hide {
+    display: none;
+  }
+  .profile-form-container {
+    width: 100%;
+  }
+}

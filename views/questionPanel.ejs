@@ -107,19 +107,11 @@ pip install playsound
     <div class="panel-right">
       <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item">
-          <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Terminal 1</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Terminal 2</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Bootstrap</a>
+          <a class="nav-link active" id="terminal-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Terminal</a>
         </li>
       </ul>
       <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab"><iframe src="https://18.221.103.44:6969/" width="100%" height="100%" style="border:none;"></iframe></div>
-        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab"><iframe src="https://18.221.103.44:6969/" width="100%" height="100%" style="border:none;"></iframe></div>
-        <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab"><iframe src="https://katakoda.com" width="100%" height="100%" style="border:none;"></iframe></div>
+        <div class="tab-pane fade show active" id="terminal-tab-div" role="tabpanel" aria-labelledby="terminal-tab"><iframe id="terminal-frame" src="https://<%=terminal_ip_and_port%>" frameborder="0" allowtransparency="true" allowfullscreen="true" style="min-height: 250px; height: 100%; width: 100%; border: 0px; background-color: transparent;"></iframe></div>
       </div>
     </div>
   </div>

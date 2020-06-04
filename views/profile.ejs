@@ -1,0 +1,149 @@
+<%- include("partials/header") -%>
+<% if (isLogined === true) { %>
+<% const loginMethod = user.loginMethod; %>
+<ul class="nav nav-pills mb-3 m-5 border border-primary rounded nav-justified" id="pills-tab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Info</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">Security</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="pills-contact-tab" data-toggle="pill" href="#pills-contact" role="tab" aria-controls="pills-contact" aria-selected="false">History</a>
+  </li>
+</ul>
+
+<div class="profile-form-container mx-auto">
+  <div class="tab-content m-5" id="pills-tabContent">
+    <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+      <form action="/upload/img" method="post" enctype="multipart/form-data">
+        <div class="circular mx-auto">
+          <img src="<%=user[loginMethod].profilePicture%>" alt="Profile Picture">
+        </div>
+        <div class="form-group">
+          <label for="profile-picture">Upload Profile Picture</label>
+          <input type="file" id="profile_img" name="profile_img" accept="image/jpeg,image/png,image/jpg">
+          <p><small>Only jpg/png allowed</small></p>
+        </div>
+        <div>
+          <button type="submit" class="btn btn-primary btn-lg btn-block">Update</button>
+        </div>
+      </form>
+      <hr>
+      <form class="profile-form" action="/profile-info-update" method="post">
+        <div class="form-group">
+          <label for="profile-fullname">Full Name</label>
+          <input type="text" class="form-control" id="profile-fullname" name="profile_fullname" placeholder="Full Name" value="<%=user[loginMethod].fullname===undefined? "Name Error" : user[loginMethod].fullname%>" readonly>
+        </div>
+        <div class="form-group">
+          <label for="profile-username">Email address</label>
+          <input type="email" class="form-control" id="profile-username" name="profile_username" placeholder="Email not provided" value="<%=user[loginMethod].email===undefined? "" : user[loginMethod].email%>" readonly>
+        </div>
+        <div class="form-group">
+          <label for="profile-bio">Bio</label>
+          <textarea class="form-control" id="profile-bio" name="profile_bio" rows="3" maxlength="120" placeholder="Enter you bio"><%=user.bio===undefined? "" : user.bio%></textarea>
+          <small>Max 120 Characters</small>
+        </div>
+        <div class="form-group">
+          <label for="profile-githubUsername">GitHub Profile</label>
+          <div class="input-group-prepend">
+            <div class="input-group-text"><i class="fa fa-github mr-2"> </i><span class="profile-form-data-to-hide">https://github.com/</span> </div>
+            <input type="text" class="form-control" id="profile-githubUsername" name="profile_githubUsername" placeholder="GitHub Username" value="<%=user.githubURL===undefined? "" : user.githubURL%>">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="profile-linkedinUsername">Linkedin Profile</label>
+          <div class="input-group-prepend">
+            <div class="input-group-text "><i class="fa fa-linkedin mr-2"> </i><span class="profile-form-data-to-hide">https://www.linkedin.com/in/</span> </div>
+            <input type="text" class="form-control" id="profile-linkedinUsername" name="profile_linkedinUsername" placeholder="Linkedin Username" value="<%=user.linkedinURL===undefined? "" : user.linkedinURL%>">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="container mt-5">
+            <div class="row">
+              <div class="col-6">
+                <a href="/dashboard" class="btn btn-secondary btn-lg btn-block">Cancel</a>
+              </div>
+              <div class="col-6">
+                <button type="submit" class="btn btn-primary btn-lg btn-block">Submit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+
+    <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+      <form action="/changePassword" method="post">
+        <div class="pb-1">
+          <h3>Be sure to use a strong password to secure your account.</h3>
+        </div>
+        <div class="alert alert-danger alert-dismissible fade show <%=user.loginMethod==="local"?'hidden':''%>" role="alert">
+          Your password is managed by <%=user.loginMethod%>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <%- include("partials/alertmessagesuccess") -%>
+        <div class="form-group">
+          <label for="profile-currentPassword">Current Password</label>
+          <input type="password" id="profile-currentPassword" name="profile_currentPassword" class="form-control " aria-describedby="profile-currentPassword" <%=(user.loginMethod==="google"||user.loginMethod==="facebook")?'readonly':''%> required="required" minlength="8" maxlength="20">
+        </div>
+        <hr>
+        <hr>
+        <div class="form-group">
+          <label for="profile-newPassword">New Password</label>
+          <input type="password" id="profile-newPassword" name="profile_newPassword" class="form-control" aria-describedby="profile-newPassword" <%=(user.loginMethod==="google"||user.loginMethod==="facebook")?'readonly':''%> required="required" minlength="8" maxlength="20">
+          <p><small>Min 8-20 characters</small></p>
+        </div>
+        <div class="form-group">
+          <label for="profile-confirmPassword">Confirm Password</label>
+          <input type="password" id="profile-confirmPassword" name="profile_confirmPassword" class="form-control" aria-describedby="profile-confirmPassword" <%=(user.loginMethod==="google"||user.loginMethod==="facebook")?'readonly':''%> required="required" minlength="8" maxlength="20">
+        </div>
+        <div class="form-group">
+          <div class="container mt-5">
+            <div class="row">
+              <div class="col-6">
+                <a href="/dashboard" class="btn btn-secondary btn-lg btn-block">Cancel</a>
+              </div>
+              <div class="col-6">
+                <button type="submit" class="btn btn-primary btn-lg btn-block" <%=(user.loginMethod==="google"||user.loginMethod==="facebook")?'disabled':''%>>Submit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+
+    <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Type</th>
+            <th scope="col">Name</th>
+            <th scope="col">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="4">This page is under development.</td>
+          </tr>
+          <!-- <tr>
+            <th scope="row">1</th>
+            <td>Practice</td>
+            <td>Minikube</td>
+            <td>5th June 2020</td>
+          </tr> -->
+
+        </tbody>
+      </table>
+      <img src="https://zillya.com/sites/default/files/under-construction.png" alt="Under Development">
+    </div>
+  </div>
+</div>
+<% } %>
+<%- include("partials/footerbar") -%>
+<%- include("partials/footer") -%>

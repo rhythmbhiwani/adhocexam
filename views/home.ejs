@@ -5,13 +5,13 @@
     <div class="text-center lg:w-2/3 w-full">
       <h1 class="title-font sm:text-4xl text-3xl mb-4 font-medium text-white">AdHoc Networks Exam Portal</h1>
       <p class="leading-relaxed mb-8"><em><strong>AdHoc Networks</strong></em><br>Accelerating your efforts !!</p>
-      <p class="leading-relaxed mb-8">Welcome to the Exam Portal for Adhoc Network. This portal is designed to conduct test and do practice for students or corporate employees who are part of AdHoc Networks.</p>
+      <p class="leading-relaxed mb-8">Welcome to the Exam Portal for Adhoc Networks. This portal is designed to conduct test and do practice for students or corporate employees who are part of AdHoc Networks.</p>
       <div class="flex justify-center">
         <% if (isLogined === false ) { %>
-          <a class="inline-flex text-white bg-blue-500 border-0 py-2 px-6 focus:outline-none hover:bg-blue-600 rounded text-lg home-button" href="/signup">Sign Up</a>
-          <a class="ml-4 inline-flex text-gray-400 bg-gray-800 border-0 py-2 px-6 focus:outline-none hover:bg-gray-700 hover:text-white rounded text-lg home-button" href="/login">Log In</a>
+        <a class="inline-flex text-white bg-blue-500 border-0 py-2 px-6 focus:outline-none hover:bg-blue-600 rounded text-lg home-button" href="/signup">Sign Up</a>
+        <a class="ml-4 inline-flex text-gray-400 bg-gray-800 border-0 py-2 px-6 focus:outline-none hover:bg-gray-700 hover:text-white rounded text-lg home-button" href="/login">Log In</a>
         <% } else { %>
-          <a class="ml-4 inline-flex text-gray-400 bg-gray-800 border-0 py-2 px-6 focus:outline-none hover:bg-gray-700 hover:text-white rounded text-lg home-button" href="/dashboard">Go To Dashboard</a>
+        <a class="ml-4 inline-flex text-gray-400 bg-gray-800 border-0 py-2 px-6 focus:outline-none hover:bg-gray-700 hover:text-white rounded text-lg home-button" href="/dashboard">Visit Dashboard</a>
         <% } %>
       </div>
     </div>
@@ -163,22 +163,24 @@
       <h1 class="sm:text-3xl text-2xl font-medium title-font mb-4 text-gray-900">Contact Us</h1>
       <p class="lg:w-2/3 mx-auto leading-relaxed text-base">Feel free to contact us for any query, feedback or suggestions.</p>
     </div>
-    <div class="lg:w-1/2 md:w-2/3 mx-auto">
-      <div class="flex flex-wrap -m-2">
-        <div class="p-2 w-1/2">
-          <input class="w-full bg-gray-100 rounded border border-gray-400 focus:outline-none focus:border-blue-500 text-base px-4 py-2" placeholder="Name" type="text">
-        </div>
-        <div class="p-2 w-1/2">
-          <input class="w-full bg-gray-100 rounded border border-gray-400 focus:outline-none focus:border-blue-500 text-base px-4 py-2" placeholder="Email" type="email">
-        </div>
-        <div class="p-2 w-full">
-          <textarea class="w-full bg-gray-100 rounded border border-gray-400 focus:outline-none h-48 focus:border-blue-500 text-base px-4 py-2 resize-none block" placeholder="Message"></textarea>
-        </div>
-        <div class="p-2 w-full">
-          <button class="flex mx-auto text-white bg-blue-500 border-0 py-2 px-8 focus:outline-none hover:bg-blue-600 rounded text-lg">Submit</button>
+    <form action="/submitfeedback" method="post">
+      <div class="lg:w-1/2 md:w-2/3 mx-auto">
+        <div class="flex flex-wrap -m-2">
+          <div class="p-2 w-1/2">
+            <input class="w-full bg-gray-100 rounded border border-gray-400 focus:outline-none focus:border-blue-500 text-base px-4 py-2" placeholder="Name" name="feedback-author" type="text" required="required">
+          </div>
+          <div class="p-2 w-1/2">
+            <input class="w-full bg-gray-100 rounded border border-gray-400 focus:outline-none focus:border-blue-500 text-base px-4 py-2" placeholder="Email" name="feedback-email" type="email" required="required">
+          </div>
+          <div class="p-2 w-full">
+            <textarea name="feedback-message" class="w-full bg-gray-100 rounded border border-gray-400 focus:outline-none h-48 focus:border-blue-500 text-base px-4 py-2 resize-none block" placeholder="Message" required="required"></textarea>
+          </div>
+          <div class="p-2 w-full">
+            <button class="flex mx-auto text-white bg-blue-500 border-0 py-2 px-8 focus:outline-none hover:bg-blue-600 rounded text-lg">Submit</button>
+          </div>
         </div>
       </div>
-    </div>
+    </form>
   </div>
 </section>
 

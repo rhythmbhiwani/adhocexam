@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/1.4.6/tailwind.min.css">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="shortcut icon" type="image/png" href="/images/favicon.ico" />
 </head>
@@ -22,11 +22,16 @@
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapsable" aria-controls="navbarCollapsable" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarCollapsable">
+    <div class="collapse navbar-collapse text-center" id="navbarCollapsable">
       <ul class="navbar-nav ml-auto">
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Account
+            <% if (isLogined === false) { %>
+            ACCOUNT
+            <% } else { %>
+              <% const loginMethod = user.loginMethod; %>
+              <span class="text-uppercase font-weight-bold"><%=user[loginMethod].fullname%></span>
+              <% } %>
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
             <% if (isLogined === false) { %>
@@ -34,14 +39,23 @@
             <a class="dropdown-item" href="/signup">Signup</a>
             <% } else { %>
             <a class="dropdown-item" href="/dashboard">Dashboard</a>
+            <a class="dropdown-item" href="/profile">Profile</a>
             <div class="dropdown-divider"></div>
             <a class="dropdown-item" href="/logout">Logout</a>
             <% } %>
           </div>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/">Home</a>
+          <a class="nav-link" href="/">HOME</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/support">SUPPORT</a>
+        </li>
+        <% if (isLogined === true && user.role === "superuser") { %>
+        <li class="nav-item">
+          <a class="nav-link text-uppercase" href="/powerzone">PowerZone</a>
+        </li>
+        <% } %>
       </ul>
     </div>
   </nav>
