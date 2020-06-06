@@ -125,7 +125,11 @@ passport.use(new GoogleStrategy({
           return cb(err);
         } else {
           if (user) {
-            return cb(err, user)
+            // if (user.accountStatus!="active") {
+            //   return cb(null,user,{state:"suspeded"});
+            // } else {
+            return cb(err, user);
+            // }
           } else {
             let newUser = new User();
             newUser.loginMethod = "google";
@@ -220,7 +224,9 @@ app.get("/questions", function(req, res) {
 app.get("/practice/:labID", function(req, res) {
   console.log(req.params.labID);
   if (req.isAuthenticated()) {
-    PracticeLab.find({_id: req.params.labID}, function(err, foundLab){
+    PracticeLab.find({
+      _id: req.params.labID
+    }, function(err, foundLab) {
       if (err) {
         console.log(err);
         res.redirect("/404");
@@ -245,14 +251,28 @@ app.get("/practice/:labID", function(req, res) {
 // GOOGLE AUTHENTICATION ROUTES
 app.get('/auth/google',
   passport.authenticate('google', {
-    scope: ["profile", "email"]
+    scope: ["profile", "email"],
+    prompt: "select_account"
   }));
 app.get('/auth/google/googlelogin',
   passport.authenticate('google', {
     failureRedirect: '/login'
   }),
   function(req, res) {
-    res.redirect('/dashboard');
+    const accountStatus = req.user.accountStatus;
+    if (req.user.accountStatus != "active") {
+      req.logout();
+      res.render("login", {
+        isLogined: checkLoginValidation(req),
+        errors: [{
+          message: "Cannot log in, you account is in " + accountStatus + " state!"
+        }],
+        user: req.user,
+        tempUserData: null
+      });
+    } else {
+      res.redirect('/dashboard');
+    }
   });
 
 // FACEBOOK AUTHENTICATION ROUTES
@@ -265,7 +285,20 @@ app.get('/auth/facebook/facebooklogin',
     failureRedirect: '/login'
   }),
   function(req, res) {
-    res.redirect('/dashboard');
+    const accountStatus = req.user.accountStatus;
+    if (req.user.accountStatus != "active") {
+      req.logout();
+      res.render("login", {
+        isLogined: checkLoginValidation(req),
+        errors: [{
+          message: "Cannot log in, you account is in " + accountStatus + " state!"
+        }],
+        user: req.user,
+        tempUserData: null
+      });
+    } else {
+      res.redirect('/dashboard');
+    }
   });
 
 // LOCAL SIGNUP ROUTES
@@ -379,9 +412,9 @@ app.post('/login', function(req, res, next) {
           }
         });
       } else {
-        if (foundUser.accountStatus!="active"){
+        if (foundUser.accountStatus != "active") {
           errors.push({
-            message: "Cannot login, your account is in "+foundUser.accountStatus+" state!"
+            message: "Cannot login, your account is in " + foundUser.accountStatus + " state!"
           });
           return res.render("login", {
             errors: errors,
@@ -428,7 +461,7 @@ app.post('/login', function(req, res, next) {
 // DASHBOARD ROUTE
 app.get("/dashboard", function(req, res) {
   if (req.isAuthenticated()) {
-    PracticeLab.find({}, function(err, foundLab){
+    PracticeLab.find({}, function(err, foundLab) {
       if (err) {
         console.log(err);
         res.redirect("/dashboard");
@@ -603,21 +636,25 @@ app.post("/changePassword", function(req, res) {
         errors: errors
       });
     } else {
-      req.user.changePassword(profile_currentPassword, profile_newPassword, function(err){
+      req.user.changePassword(profile_currentPassword, profile_newPassword, function(err) {
         if (err) {
           console.log(err);
           res.render("profile", {
             isLogined: checkLoginValidation(req),
             user: req.user,
             alertType: "danger",
-            errors: [{message: "Wrong Current Password!"}]
+            errors: [{
+              message: "Wrong Current Password!"
+            }]
           });
         } else {
           res.render("profile", {
             isLogined: checkLoginValidation(req),
             user: req.user,
             alertType: "success",
-            errors: [{message: "Password Successfully Changed!"}]
+            errors: [{
+              message: "Password Successfully Changed!"
+            }]
           });
         }
       });
@@ -628,7 +665,7 @@ app.post("/changePassword", function(req, res) {
 });
 
 // SUPPORT PAGE ROUTE
-app.get("/support",function(req,res){
+app.get("/support", function(req, res) {
   res.render("supportPage", {
     isLogined: checkLoginValidation(req),
     user: req.user
@@ -636,15 +673,15 @@ app.get("/support",function(req,res){
 });
 
 // PRACTICE LAB INSERT GET ROUTE
-app.get("/addPracticeLab", function(req,res){
-  res.render("addLab",{
+app.get("/addPracticeLab", function(req, res) {
+  res.render("addLab", {
     isLogined: checkLoginValidation(req),
     user: req.user
   });
 });
 
 // PRACTICE LAB INSERT QUESTION ROUTE
-app.post("/addPracticeLab",function(req,res){
+app.post("/addPracticeLab", function(req, res) {
   console.log(req.body);
   const newLab = new PracticeLab({
     thumbnailUrl: req.body.thumbnailUrl,
@@ -654,7 +691,7 @@ app.post("/addPracticeLab",function(req,res){
     katacodaUsername: req.body.katacodaUsername,
     katacodaScenarioName: req.body.katacodaScenarioName
   });
-  newLab.save(function(err){
+  newLab.save(function(err) {
     if (err) {
       console.log(err);
     } else {
@@ -666,19 +703,133 @@ app.post("/addPracticeLab",function(req,res){
 
 
 // ROUTE TO ADMIN CONSOLE
-app.get("/powerzone",function(req,res){
+app.get("/powerzone", function(req, res) {
   if (req.isAuthenticated()) {
-    if (req.user.role!="superuser") {
-      res.render("403",{
+    if (req.user.role != "superuser") {
+      res.render("adminPanel/403", {
         isLogined: checkLoginValidation(req),
         user: req.user
       });
     } else {
-      res.render("adminDash",{
+      Promise.all([
+        User.countDocuments({}),
+        PracticeLab.countDocuments({})
+      ]).then(function([userCount, practiceLabCount]) {
+        res.render("adminPanel/adminDash", {
+          isLogined: checkLoginValidation(req),
+          user: req.user,
+          pageType: "dashboard",
+          userCount: userCount,
+          practiceLabCount: practiceLabCount
+        });
+      });
+    }
+  } else {
+    res.redirect("/login");
+  }
+});
+
+// ROUTE TO ADDITIONAL POWERZONE SETTINGS
+app.get("/powerzone/:setting", function(req, res) {
+  if (req.isAuthenticated()) {
+    if (req.user.role != "superuser") {
+      res.render("403", {
         isLogined: checkLoginValidation(req),
         user: req.user
       });
+    } else {
+      if (req.params.setting === "manageUsers") {
+        res.render("adminPanel/adminManageUsers", {
+          isLogined: checkLoginValidation(req),
+          user: req.user,
+          pageType: "manageusers"
+        });
+      } else if (req.params.setting === "practiceLabs") {
+        PracticeLab.find({}, function(err, foundLab) {
+          if (err) {
+            console.log(err);
+            res.redirect("/dashboard");
+          } else {
+            if (foundLab) {
+              res.render("adminPanel/adminPracticeLab", {
+                isLogined: checkLoginValidation(req),
+                user: req.user,
+                pageType: "plabs",
+                foundLab: foundLab
+              });
+            }
+          }
+        });
+      } else if (req.params.setting === "examLabs") {
+        res.render("adminPanel/adminManageUsers", {
+          isLogined: checkLoginValidation(req),
+          user: req.user,
+          pageType: "elabs"
+        });
+      } else if (req.params.setting === "information") {
+        res.render("adminPanel/adminManageUsers", {
+          isLogined: checkLoginValidation(req),
+          user: req.user,
+          pageType: "info"
+        });
+      } else if (req.params.setting === "userFeedbacks") {
+        res.render("adminPanel/adminManageUsers", {
+          isLogined: checkLoginValidation(req),
+          user: req.user,
+          pageType: "userfeedback"
+        });
+      } else {
+        res.redirect("/powerzone");
+      }
     }
+  } else {
+    res.redirect("/login");
+  }
+});
+
+// POWERZONE POST ROUTES
+app.post("/powerzone/:setting", function(req, res) {
+  if (req.isAuthenticated()) {
+    if (req.user.role != "superuser") {
+      res.render("403", {
+        isLogined: checkLoginValidation(req),
+        user: req.user
+      });
+    } else {
+      if (req.params.setting === "addPracticeLab") {
+        console.log(req.body);
+        const newLab = new PracticeLab({
+          thumbnailUrl: req.body.thumbnailUrl,
+          catagory: req.body.catagory,
+          labName: req.body.labName,
+          labDescription: req.body.labDescription,
+          katacodaUsername: req.body.katacodaUsername,
+          katacodaScenarioName: req.body.katacodaScenarioName
+        });
+        newLab.save(function(err) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log(newLab);
+          }
+          res.redirect("/powerzone/practiceLabs");
+        });
+      } else if (req.params.setting === "editPracticeLab") {
+        PracticeLab.updateOne({
+          _id: req.body.labID
+        }, req.body, function(err) {
+          res.redirect("/powerzone/practiceLabs");
+        });
+      } else if (req.params.setting === "deletePracticeLab") {
+        PracticeLab.deleteOne({
+          _id: req.body.labID
+        }, function(err) {
+          res.redirect("/powerzone/practiceLabs");
+        });
+
+      }
+    }
+
   } else {
     res.redirect("/login");
   }

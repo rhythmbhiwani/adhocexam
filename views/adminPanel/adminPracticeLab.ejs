@@ -1,0 +1,168 @@
+<%- include("../partials/admin/adminHeader") %>
+<%- include("../partials/admin/adminSidebar") %>
+<%- include("../partials/admin/adminTopbar") %>
+
+<script defer src="/js/adminScript.js" charset="utf-8"></script>
+
+
+<!-- Begin Page Content -->
+<div class="container-fluid">
+
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Practice Labs</h1>
+    <button type="button" data-toggle="modal" data-target="#AddNewPracticeLab" class="d-none d-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> Add New</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="AddNewPracticeLab" tabindex="-1" role="dialog" aria-labelledby="AddNewPracticeLab" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModelTitle">Add new practice lab</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="mx-auto">
+            <form id="addPracticeLabForm" method="post" action="/powerzone/addPracticeLab">
+              <div class="form-group">
+                <label for="catagory">Catagory</label>
+                <input type="text" class="form-control" id="catagory" name="catagory" placeholder="Ex. DOCKER / K8S" required="required">
+              </div>
+              <div class="form-group">
+                <label for="labName">Lab Name</label>
+                <input type="text" class="form-control" id="labName" name="labName" placeholder="Ex. MINIKUBE BEGINNERS" required="required">
+              </div>
+              <div class="form-group">
+                <label for="katacodaUsername">Katacoda Username</label>
+                <input type="text" class="form-control" id="katacodaUsername" name="katacodaUsername" placeholder="Ex. rhythmbhiwani" required="required">
+              </div>
+              <div class="form-group">
+                <label for="katacodaScenarioName">Katacoda Scenario Name</label>
+                <input type="text" class="form-control" id="katacodaScenarioName" name="katacodaScenarioName" placeholder="Ex. hello-world" required="required">
+              </div>
+              <div class="form-group">
+                <label for="thumbnailUrl">Thumbnail Url</label>
+                <input type="text" class="form-control" id="thumbnailUrl" name="thumbnailUrl" placeholder="Image url" required="required">
+              </div>
+              <div class="form-group">
+                <label for="labDescription">Lab Description</label>
+                <textarea class="form-control" id="labDescription" name="labDescription" rows="3" placeholder="Description" required="required"></textarea>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" form="addPracticeLabForm" class="btn btn-success">Add Lab</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!--Edit Modal -->
+  <div class="modal fade" id="EditPracticeLab" tabindex="-1" role="dialog" aria-labelledby="EditPracticeLab" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModelTitle">Edit Lab</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="mx-auto">
+            <form id="editPracticeLabForm" method="post" action="/powerzone/editPracticeLab">
+              <input type="hidden" name="labID" id="labID" value="SampleID">
+              <div class="form-group">
+                <label for="catagory">Catagory</label>
+                <input type="text" class="form-control" id="catagory" name="catagory" placeholder="Ex. DOCKER / K8S" required="required">
+              </div>
+              <div class="form-group">
+                <label for="labName">Lab Name</label>
+                <input type="text" class="form-control" id="labName" name="labName" placeholder="Ex. MINIKUBE BEGINNERS" required="required">
+              </div>
+              <div class="form-group">
+                <label for="katacodaUsername">Katacoda Username</label>
+                <input type="text" class="form-control" id="katacodaUsername" name="katacodaUsername" placeholder="Ex. rhythmbhiwani" required="required">
+              </div>
+              <div class="form-group">
+                <label for="katacodaScenarioName">Katacoda Scenario Name</label>
+                <input type="text" class="form-control" id="katacodaScenarioName" name="katacodaScenarioName" placeholder="Ex. hello-world" required="required">
+              </div>
+              <div class="form-group">
+                <label for="thumbnailUrl">Thumbnail Url</label>
+                <input type="text" class="form-control" id="thumbnailUrl" name="thumbnailUrl" placeholder="Image url" required="required">
+              </div>
+              <div class="form-group">
+                <label for="labDescription">Lab Description</label>
+                <textarea class="form-control" id="labDescription" name="labDescription" rows="3" placeholder="Description" required="required"></textarea>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" form="editPracticeLabForm" class="btn btn-success">Update Lab</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if (foundLab && foundLab.length>0){ %>
+  <div class="card-columns">
+    <% foundLab.forEach(function(lab){ %>
+    <div class="card">
+      <div class="card-body">
+
+        <button type="button" class="close" data-toggle="modal" aria-label="Close" data-target="#DeletePracticeLab" data-lab-id="<%=lab._id%>" data-lab-name="<%=lab.labName%>">
+          <span aria-hidden="true">&times;</span>
+        </button>
+
+        <h5 class="card-title"><%=lab.labName%></h5>
+
+        <h6 class="card-subtitle mb-2 text-muted"><%=lab.catagory%></h6>
+        <p class="card-text"><%=lab.labDescription%></p>
+
+        <a href="/practice/<%=lab._id%>" class="card-link btn btn-outline-dark">Visit Lab</a>
+
+        <button type="button" class="card-link btn btn-outline-primary" data-toggle="modal" data-target="#EditPracticeLab" data-lab-name="<%=lab.labName%>" data-lab-catagory="<%=lab.catagory%>" data-katacoda-username="<%=lab.katacodaUsername%>"
+          data-katacoda-scenario-name="<%=lab.katacodaScenarioName%>" data-thumbnail-url="<%=lab.thumbnailUrl%>" data-lab-description="<%=lab.labDescription%>" data-lab-id="<%=lab._id%>">Edit</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+  <!--Delete Lab Modal -->
+  <div class="modal fade" id="DeletePracticeLab" tabindex="-1" role="dialog" aria-labelledby="DeletePracticeLab" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="DeletePracticeLabTitle">Are you sure ?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Please be sure that you want to delete the lab <span class="font-weight-bold" id="labToDeleteName"></span>.<br>The action is irreversible.
+          <form id="DeletePracticeLabForm" action="/powerzone/deletePracticeLab" method="post">
+            <input type="hidden" id="deleteLabID" name="labID" value="">
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-danger" form="DeletePracticeLabForm">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- /.container-fluid -->
+
+
+
+<%- include("../partials/admin/adminFooter") %>
