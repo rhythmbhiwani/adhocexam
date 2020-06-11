@@ -4,7 +4,7 @@
   "description": "AdhocExam Server",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "heroku-postbuild": "npm rebuild node-sass"
   },
   "author": "Rhythm Bhiwani",
   "license": "ISC",
