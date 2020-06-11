@@ -399,7 +399,6 @@ app.post("/signup", function(req, res) {
             user.role = "standard";
             user.accountStatus = "active";
             user.save();
-            console.log(user);
             passport.authenticate("local")(req, res, function() {
               res.redirect("/dashboard");
             });
