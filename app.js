@@ -387,6 +387,7 @@ app.post("/signup", function(req, res) {
           username: givenUsername
         }, givenPassword1, function(err, user) {
           if (err) {
+            console.log(err);
             res.redirect("/signup");
           } else {
             user.local = {
@@ -398,6 +399,7 @@ app.post("/signup", function(req, res) {
             user.role = "standard";
             user.accountStatus = "active";
             user.save();
+            console.log(user);
             passport.authenticate("local")(req, res, function() {
               res.redirect("/dashboard");
             });
