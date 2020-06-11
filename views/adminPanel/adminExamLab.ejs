@@ -1,0 +1,174 @@
+<%- include("../partials/admin/adminHeader") %>
+<%- include("../partials/admin/adminSidebar") %>
+<%- include("../partials/admin/adminTopbar") %>
+
+<script defer src="/js/adminScript.js" charset="utf-8"></script>
+
+<style>
+  .error-custom {
+    border-color: red;
+  }
+</style>
+
+<!-- Begin Page Content -->
+<div class="container-fluid">
+
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Exam Labs</h1>
+    <button type="button" data-toggle="modal" data-target="#AddNewExamLab" class="d-none d-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> Add New</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="AddNewExamLab" tabindex="-1" role="dialog" aria-labelledby="AddNewExamLab" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModelTitle">Add new exam lab</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="mx-auto">
+            <form id="AddExamLabForm" method="post" action="/powerzone/addExamLab">
+              <div class="form-group">
+                <label for="catagory">Catagory</label>
+                <input type="text" class="form-control" id="catagory" name="catagory" placeholder="Ex. DOCKER / K8S" required="required">
+              </div>
+              <div class="form-group">
+                <label for="labName">Lab Name</label>
+                <input type="text" class="form-control" id="labName" name="labName" placeholder="Ex. K8S EXAM 1" required="required">
+              </div>
+              <div class="form-group">
+                <label for="terminal_ip_and_port">Terminal IP and Port</label>
+                <input type="text" class="form-control" id="terminal_ip_and_port" name="terminal_ip_and_port" placeholder="Ex. 127.0.0.1:4200" required="required">
+              </div>
+              <div class="form-group">
+                <label for="thumbnailUrl">Thumbnail Url</label>
+                <input type="text" class="form-control" id="thumbnailUrl" name="thumbnailUrl" placeholder="IMAGE URL" required="required">
+              </div>
+              <div class="form-group">
+                <label for="examDetails">Exam Details</label>
+                <textarea class="form-control" id="examDetails" name="examDetails" rows="3" placeholder="DESCRIPTION" required="required"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="labDataMarkdown">Lab Data in Markdown</label>
+                <textarea class="form-control" id="labDataMarkdown" name="labDataMarkdown" rows="3" placeholder="GITHUB MARKDOWN" required="required"></textarea>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" id="AddExamLabButton" class="btn btn-success" onclick="addExamLab();">Add Lab</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!--Edit Modal -->
+  <div class="modal fade" id="EditExamLab" tabindex="-1" role="dialog" aria-labelledby="EditExamLab" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModelTitle">Edit Lab</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="mx-auto">
+            <form id="editExamLabForm" method="post" action="/powerzone/editExamLabForm">
+              <input type="hidden" name="labID" id="labID" value="SampleID">
+              <div class="form-group">
+                <label for="catagory">Catagory</label>
+                <input type="text" class="form-control" id="catagory" name="catagory" placeholder="Ex. DOCKER / K8S" required="required">
+              </div>
+              <div class="form-group">
+                <label for="labName">Lab Name</label>
+                <input type="text" class="form-control" id="labName" name="labName" placeholder="Ex. K8S EXAM 1" required="required">
+              </div>
+              <div class="form-group">
+                <label for="terminal_ip_and_port">Terminal IP and Port</label>
+                <input type="text" class="form-control" id="terminal_ip_and_port" name="terminal_ip_and_port" placeholder="Ex. 127.0.0.1:4200" required="required">
+              </div>
+              <div class="form-group">
+                <label for="thumbnailUrl">Thumbnail Url</label>
+                <input type="text" class="form-control" id="thumbnailUrl" name="thumbnailUrl" placeholder="IMAGE URL" required="required">
+              </div>
+              <div class="form-group">
+                <label for="examDetails">Exam Details</label>
+                <textarea class="form-control" id="examDetails" name="examDetails" rows="3" placeholder="DESCRIPTION" required="required"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="labDataMarkdown">Lab Data in Markdown</label>
+                <textarea class="form-control" id="labDataMarkdown" name="labDataMarkdown" rows="3" placeholder="GITHUB MARKDOWN" required="required"></textarea>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" onclick="editExamLab();" class="btn btn-success">Update Lab</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if (foundLab && foundLab.length>0){ %>
+  <div class="card-columns">
+    <% foundLab.forEach(function(lab){ %>
+    <div class="card">
+      <div class="card-body">
+
+        <button type="button" class="close" data-toggle="modal" aria-label="Close" data-target="#DeleteExamLab" data-lab-id="<%=lab._id%>" data-lab-name="<%=lab.labName%>">
+          <span aria-hidden="true">&times;</span>
+        </button>
+
+        <h5 class="card-title"><%=lab.labName%></h5>
+
+        <h6 class="card-subtitle mb-2 text-muted"><%=lab.catagory%></h6>
+        <p class="card-text"><%=lab.examDetails%></p>
+
+        <a href="/questions/<%=lab._id%>" class="card-link btn btn-outline-dark">View Lab</a>
+
+        <button type="button" class="card-link btn btn-outline-primary" data-toggle="modal" data-target="#EditExamLab" data-lab-name="<%=lab.labName%>" data-lab-catagory="<%=lab.catagory%>" data-exam-details="<%=lab.examDetails%>"
+          data-lab-data-markdown="<%=lab.labDataMarkdown%>" data-thumbnail-url="<%=lab.thumbnailUrl%>" data-terminal-ip-and-port="<%=lab.terminal_ip_and_port%>" data-lab-id="<%=lab._id%>" data-lab-data-html="<%=lab.labDataHTML%>">Edit</button>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+
+  <!--Delete Lab Modal -->
+  <div class="modal fade" id="DeleteExamLab" tabindex="-1" role="dialog" aria-labelledby="DeleteExamLab" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="DeleteExamLabTitle">Are you sure ?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Please be sure that you want to delete the lab <span class="font-weight-bold" id="labToDeleteName"></span>.<br>The action is irreversible.
+          <form id="DeleteExamLabForm" action="/powerzone/deleteExamLab" method="post">
+            <input type="hidden" id="deleteLabID" name="labID" value="">
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-danger" form="DeleteExamLabForm">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- /.container-fluid -->
+
+
+
+<%- include("../partials/admin/adminFooter") %>

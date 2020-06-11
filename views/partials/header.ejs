@@ -11,7 +11,7 @@
   <link rel="shortcut icon" type="image/png" href="/images/favicon.ico" />
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
 
 
   <!-- NAVIGATION BAR -->
@@ -29,9 +29,9 @@
             <% if (isLogined === false) { %>
             ACCOUNT
             <% } else { %>
-              <% const loginMethod = user.loginMethod; %>
-              <span class="text-uppercase font-weight-bold"><%=user[loginMethod].fullname%></span>
-              <% } %>
+            <% const loginMethod = user.loginMethod; %>
+            <span class="text-uppercase font-weight-bold"><%=user[loginMethod].fullname%></span>
+            <% } %>
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
             <% if (isLogined === false) { %>
@@ -51,6 +51,11 @@
         <li class="nav-item">
           <a class="nav-link" href="/support">SUPPORT</a>
         </li>
+        <% if (isLogined === true) { %>
+        <li class="nav-item">
+          <a class="nav-link" href="/sharedfiles">SHARED FILES</a>
+        </li>
+        <% } %>
         <% if (isLogined === true && user.role === "superuser") { %>
         <li class="nav-item">
           <a class="nav-link text-uppercase" href="/powerzone">PowerZone</a>

@@ -1,0 +1,78 @@
+<%- include("../partials/admin/adminHeader") %>
+<%- include("../partials/admin/adminSidebar") %>
+<%- include("../partials/admin/adminTopbar") %>
+
+<!-- Begin Page Content -->
+<div class="container-fluid">
+
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Share Files</h1>
+    <button type="button" data-toggle="modal" data-target="#uploadNewFiles" class="d-none d-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> Upload File</button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">File Name</th>
+          <th scope="col">Date</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (Object.keys(allFiles).length>0) { %>
+        <% let count = 1; Object.keys(allFiles).forEach(function(file){ %>
+        <tr>
+          <th scope="row"><%=count%></th>
+          <td><%=file%></td>
+          <td><%=allFiles[file]%></td>
+          <form id="Form-<%=file%>" action="/deleteFile" method="post">
+            <input type="hidden" name="fileName" value="<%=file%>">
+          </form>
+          <td><button type="submit" form="Form-<%=file%>" class="btn text-danger"><i class="fas fa-trash"></i></button> <a href="/share/uploads/<%=file%>" class="text-primary ml-2" download><i class="fas fa-download"></i></a></td>
+        </tr>
+        <% count++; %>
+        <% } ); %>
+        <% } else { %>
+          <tr>
+            <td colspan="4">No Files Currently</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- /.container-fluid -->
+
+<!-- Modal -->
+<div class="modal fade" id="uploadNewFiles" tabindex="-1" role="dialog" aria-labelledby="uploadNewFiles" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadNewFiles">Upload New File</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- MULTIPLE FILES -->
+
+        <form id="shareFilesForm" action="/shareFiles" enctype="multipart/form-data" method="POST">
+          <div class="form-group">
+            <label for="sharedFiles">Example file input</label>
+            <input type="file" class="form-control-file" name="sharedFiles" id="sharedFiles" multiple required>
+          </div>
+        </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" form="shareFilesForm" class="btn btn-primary">Upload</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include("../partials/admin/adminFooter") %>

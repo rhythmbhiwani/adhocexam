@@ -1,6 +1,157 @@
 <%- include("../partials/admin/adminHeader") %>
 <%- include("../partials/admin/adminSidebar") %>
 <%- include("../partials/admin/adminTopbar") %>
+<!-- Custom styles for this page -->
+<link href="/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/css/adminCss.css">
+<!-- Begin Page Content -->
+<div class="container-fluid">
+  <!-- Page Heading -->
+  <h1 class="h3 mb-2 text-gray-800">Manage Users</h1>
+  <p class="mb-4">Please be careful while handling user's privacy and permissions.</p>
+
+  <!-- DataTales Example -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">AdHoc Networks Prestigious Members</h6>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Picture</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Mode</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <th>#</th>
+              <th>Picture</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Mode</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </tfoot>
+          <tbody>
+            <% if (foundUsers && foundUsers.length>0){ %>
+            <% let sNo = 1; %>
+            <% foundUsers.forEach(function(foundUser){ %>
+            <% const loginMethod = foundUser.loginMethod; %>
+            <% let statusColorClass = 0; %>
+            <% if (foundUser.accountStatus === "active") { statusColorClass = "text-success"; } else if (foundUser.accountStatus === "pending") { statusColorClass = "text-warning"; } else if (foundUser.accountStatus === "suspended") { statusColorClass = "text-danger"; } %>
+            <tr>
+              <td class="align-middle text-center"><%=sNo%></td>
+              <td class="align-middle text-center"><img class="rounded-circle" src="<%=foundUser[loginMethod].profilePicture%>" style="width: 60px; height: 60px;" alt="Profile Pic"></td>
+              <td class="align-middle text-center"><%=foundUser[loginMethod].fullname%></td>
+              <td class="align-middle text-center"><%=foundUser[loginMethod].email%></td>
+              <% if(foundUser.loginMethod === "facebook") { %>
+              <td class="align-middle text-center"><span class="d-none">facebook</span><img src="/images/facebookLogo.webp" style="width:40px;" alt="facebook"></img></td>
+              <% } else if(foundUser.loginMethod === "google") { %>
+              <td class="align-middle text-center"><span class="d-none">google</span><img src="/images/googleLogo.webp" style="width:40px;" alt="google"></td>
+              <% } else if(foundUser.loginMethod === "local") { %>
+              <td class="align-middle text-center"><span class="d-none">local</span><img src="/images/adhocLogo.webp" style="width:40px;" alt="local"></td>
+              <% }%>
+              <td class="align-middle text-center"><%=foundUser.role%></td>
+              <td class="align-middle text-center <%=statusColorClass%>"><%=foundUser.accountStatus%></td>
+              <td class="align-middle text-center">
+                <% if (foundUser.accountStatus !== "suspended") { %>
+                <a href="#" data-toggle="modal" data-target="#suspendOrActivateAccount" data-user-id="<%=foundUser._id%>" data-user-name="<%=foundUser[loginMethod].fullname%>" data-todo="suspend"><i data-toggle="tooltip" data-placement="left"
+                    title="Suspend Account" class="fas fa-times-circle text-danger" style="font-size: 25px;"></i></a>
+                <% } else { %>
+                <a href="#" data-toggle="modal" data-target="#suspendOrActivateAccount" data-user-id="<%=foundUser._id%>" data-user-name="<%=foundUser[loginMethod].fullname%>" data-todo="activate"><i data-toggle="tooltip" data-placement="left"
+                    title="Activate Account" class="fas fa-check-circle text-success" style="font-size: 25px;"></i></a>
+                <% } %>
 
 
+                <a href="#" data-toggle="modal" data-target="#userExpandModel" data-user-id="<%=foundUser._id%>" data-user-loginmethod="<%=foundUser.loginMethod%>" data-user-role="<%=foundUser.role%>"
+                  data-user-accountstatus="<%=foundUser.accountStatus%>" data-user-bio="<%=foundUser.bio%>" data-user-github="<%=foundUser.githubURL%>" data-user-linkedin="<%=foundUser.linkedinURL%>"
+                  data-user-fullname="<%=foundUser[loginMethod].fullname%>" data-user-email="<%=foundUser[loginMethod].email%>" data-user-profileimg="<%=foundUser[loginMethod].profilePicture%>"
+                  <% if(foundUser.loginMethod === "facebook" || foundUser.loginMethod === "google") { %> data-user-<%=foundUser.loginMethod%>-id="<%=foundUser[loginMethod][loginMethod+"Id"]%>" <% } %>>
+                  <i data-toggle="tooltip" data-placement="left" title="Expand Details" class="fas fa-info-circle text-primary" style="font-size: 25px;"></i>
+                </a>
+              </td>
+            </tr>
+            <% sNo++; %>
+            <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- /.container-fluid -->
+
+<!-- Modal -->
+<div class="modal fade" id="userExpandModel" tabindex="-1" role="dialog" aria-labelledby="userExpandModel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content mx-auto" style="border-radius: 25px;width: max-content;">
+      <div class="modal-body mx-auto">
+        <div class="Inside-Card">
+          <div class="card">
+            <img id="userProfileimg" src="" class="img-avatar">
+            <div class="card-text">
+              <div class="portada">
+              </div>
+              <div class="title-total">
+                <div class="title text-uppercase" id="userRoleAndStatus"></div>
+                <h2 id="userFullname"></h2>
+                <div id="userEmail" class="desc"></div>
+                <div id="userBio" class="desc"></div>
+                <div class="actions">
+                  <a id="userGithub" class="d-none" href="" target="_blank"><i class="fab fa-github"></i></a>
+                  <a id="userLinkedin" class="d-none" href="" target="_blank"><i class="fab fa-linkedin"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Suspend Modal -->
+<div class="modal fade" id="suspendOrActivateAccount" tabindex="-1" role="dialog" aria-labelledby="suspendOrActivateAccount" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="suspendOrActivateAccountLabel">Are you sure?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Do you want to <span id="todo"></span> <span id="suspendName" class="font-weight-bold"></span>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <form action="/powerzone/suspendUser" method="post">
+          <input type="hidden" id="hiddenTodo" name="accountStatus" value="">
+          <input type="hidden" id="hiddenUserId" name="hiddenUserId" value="">
+          <button id="buttonName" type="submit" class="btn btn-danger text-capitalize">Suspend</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script defer src="/js/adminScript.js" charset="utf-8"></script>
+<!-- Page level plugins -->
+<script defer src="/vendor/datatables/jquery.dataTables.min.js"></script>
+<script defer src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+<!-- Page level custom scripts -->
+<script defer src="/js/demo/datatables-demo.js"></script>
 <%- include("../partials/admin/adminFooter") %>

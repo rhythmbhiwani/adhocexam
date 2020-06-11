@@ -10,12 +10,24 @@ const imgbbUploader = require('imgbb-uploader');
 const passport = require('passport');
 const multer = require('multer');
 const fs = require('fs');
-const uploadpath = multer({
+const imguploadpath = multer({
   dest: __dirname + '/public/temp/uploads'
 });
 const passportLocalMongoose = require('passport-local-mongoose');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
+
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, __dirname + '/public/share/uploads')
+  },
+  filename: function(req, file, cb) {
+    cb(null, file.originalname.replace(/ /g, "_"))
+  }
+})
+const fileShare = multer({
+  storage: storage
+})
 
 // DEFINING APP AND ITS PARAMETERS
 const app = express();
@@ -53,6 +65,27 @@ const practiceSchema = new mongoose.Schema({
   katacodaScenarioName: String
 });
 const PracticeLab = new mongoose.model("PracticeLab", practiceSchema);
+
+// EXAM LAB SCHEMA
+const examSchema = new mongoose.Schema({
+  thumbnailUrl: String,
+  catagory: String,
+  labName: String,
+  examDetails: String,
+  labDataMarkdown: String,
+  labDataHTML: String,
+  terminal_ip_and_port: String
+});
+const ExamLab = new mongoose.model("ExamLab", examSchema);
+
+
+// FEEDBACK SCHEMA
+const feedbackSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  message: String
+});
+const Feedback = new mongoose.model("Feedback", feedbackSchema);
 
 
 // SETTING USER SCHEMA
@@ -106,7 +139,6 @@ function checkLoginValidation(req) {
 function deleteFile(req) {
   fs.unlink(req.file.path, function(err) {
     if (err) throw err;
-    console.log('File deleted!');
   });
 }
 
@@ -125,11 +157,7 @@ passport.use(new GoogleStrategy({
           return cb(err);
         } else {
           if (user) {
-            // if (user.accountStatus!="active") {
-            //   return cb(null,user,{state:"suspeded"});
-            // } else {
             return cb(err, user);
-            // }
           } else {
             let newUser = new User();
             newUser.loginMethod = "google";
@@ -209,20 +237,33 @@ app.get("/", function(req, res) {
   });
 });
 
-app.get("/questions", function(req, res) {
+app.get("/questions/:labID", function(req, res) {
   if (req.isAuthenticated()) {
-    res.render("questionPanel", {
-      isLogined: checkLoginValidation(req),
-      user: req.user,
-      terminal_ip_and_port: process.env.TERMINAL_IP_AND_PORT
+    ExamLab.find({
+      _id: req.params.labID
+    }, function(err, foundLab) {
+      if (err) {
+        console.log(err);
+        res.redirect("/dashboard");
+      } else {
+        if (foundLab) {
+          res.render("questionPanel", {
+            isLogined: checkLoginValidation(req),
+            user: req.user,
+            foundLab: foundLab
+          });
+        } else {
+          res.redirect("/dashboard");
+        }
+      }
     });
+
   } else {
     res.redirect("/login");
   }
 });
 
 app.get("/practice/:labID", function(req, res) {
-  console.log(req.params.labID);
   if (req.isAuthenticated()) {
     PracticeLab.find({
       _id: req.params.labID
@@ -308,7 +349,6 @@ app.post("/signup", function(req, res) {
   const givenFullName = req.body.fullname;
   const givenPassword1 = req.body.password;
   const givenPassword2 = req.body.confirm_password;
-  console.log(req.body);
   if (!givenUsername || givenUsername.trim() === '' || givenFullName.trim() === '' || !givenFullName || !givenPassword1 || !givenPassword2) {
     errors.push({
       message: "Please fill all the details!"
@@ -352,7 +392,7 @@ app.post("/signup", function(req, res) {
             user.local = {
               fullname: givenFullName,
               email: givenUsername,
-              profilePicture: "https://rainerboshoff.co.za/wp-content/uploads/2014/08/Profile-Pic-Demo.png"
+              profilePicture: "/images/demoDP.webp"
             }
             user.loginMethod = "local";
             user.role = "standard";
@@ -467,14 +507,54 @@ app.get("/dashboard", function(req, res) {
         res.redirect("/dashboard");
       } else {
         if (foundLab) {
-          res.render("dashboard", {
-            isLogined: checkLoginValidation(req),
-            user: req.user,
-            foundLab: foundLab
+          ExamLab.find({}, function(err, examFoundLabs) {
+            if (err) {
+              console.log(err);
+              res.redirect("/dashboard");
+            } else {
+              if (examFoundLabs) {
+                res.render("dashboard", {
+                  isLogined: checkLoginValidation(req),
+                  user: req.user,
+                  foundLab: foundLab,
+                  examFoundLabs: examFoundLabs
+                });
+              }
+            }
           });
+
         }
       }
     });
+  } else {
+    res.redirect("/login");
+  }
+});
+
+
+// VIEW SHARED FILES ROUTE
+app.get("/sharedfiles", function(req, res) {
+  if (req.isAuthenticated()) {
+    fs.readdir(__dirname + "/public/share/uploads", function(err, files) {
+      if (err) {
+        return console.log('Unable to scan directory: ' + err);
+      }
+      var allFiles = {};
+      files.forEach(function(file) {
+        const mydate = new Date(fs.statSync(__dirname + "/public/share/uploads/" + file).mtimeMs);
+        const month = ["January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"
+        ][mydate.getMonth()];
+        allFiles[file] = mydate.getDate() + " " + month + " " + mydate.getFullYear();
+      });
+
+      res.render("sharedFiles", {
+        isLogined: checkLoginValidation(req),
+        user: req.user,
+        allFiles: allFiles
+      });
+    });
+
   } else {
     res.redirect("/login");
   }
@@ -530,13 +610,17 @@ app.get("/logout", function(req, res) {
 
 // FEEDBACK SUBMIT ROUTE
 app.post("/submitfeedback", function(req, res) {
-  console.log(req.body);
+  const newFeedback = new Feedback({
+    name: req.body.feedback_author,
+    email: req.body.feedback_email,
+    message: req.body.feedback_message
+  });
+  newFeedback.save();
   res.redirect("/");
 });
 
 // UPDATE INFO ROUTE
 app.post("/profile-info-update", function(req, res) {
-  console.log(req.body);
   if (req.isAuthenticated()) {
     User.findById(req.user.id, function(err, foundUser) {
       if (err) {
@@ -546,15 +630,12 @@ app.post("/profile-info-update", function(req, res) {
         if (foundUser) {
           if (req.body.profile_bio) {
             foundUser.bio = req.body.profile_bio;
-            console.log(req.body.profile_bio);
           }
           if (req.body.profile_githubUsername) {
             foundUser.githubURL = req.body.profile_githubUsername;
-            console.log(req.body.profile_githubUsername);
           }
           if (req.body.profile_linkedinUsername) {
             foundUser.linkedinURL = req.body.profile_linkedinUsername;
-            console.log(req.body.profile_linkedinUsername);
           }
           foundUser.save(function(err) {
             if (!err) {
@@ -571,9 +652,8 @@ app.post("/profile-info-update", function(req, res) {
 });
 
 // UPDATE PROFILE PICTURE
-app.post('/upload/img', uploadpath.single('profile_img'), (req, res) => {
+app.post('/upload/img', imguploadpath.single('profile_img'), (req, res) => {
   if (req.file.mimetype === "image/png" || req.file.mimetype === "image/jpg" || req.file.mimetype === "image/jpeg") {
-    console.log(req.file.mimetype);
     imgbbUploader(process.env.IMGBB_API_KEY, req.file.path)
       .then(function(response) {
         User.findById(req.user.id, function(err, foundUser) {
@@ -607,7 +687,6 @@ app.post('/upload/img', uploadpath.single('profile_img'), (req, res) => {
 
 // CHANGE PASSWORD ROUTE
 app.post("/changePassword", function(req, res) {
-  console.log(req.body);
   let errors = [];
   const profile_currentPassword = req.body.profile_currentPassword;
   const profile_newPassword = req.body.profile_newPassword;
@@ -672,35 +751,6 @@ app.get("/support", function(req, res) {
   });
 });
 
-// PRACTICE LAB INSERT GET ROUTE
-app.get("/addPracticeLab", function(req, res) {
-  res.render("addLab", {
-    isLogined: checkLoginValidation(req),
-    user: req.user
-  });
-});
-
-// PRACTICE LAB INSERT QUESTION ROUTE
-app.post("/addPracticeLab", function(req, res) {
-  console.log(req.body);
-  const newLab = new PracticeLab({
-    thumbnailUrl: req.body.thumbnailUrl,
-    catagory: req.body.catagory,
-    labName: req.body.labName,
-    labDescription: req.body.labDescription,
-    katacodaUsername: req.body.katacodaUsername,
-    katacodaScenarioName: req.body.katacodaScenarioName
-  });
-  newLab.save(function(err) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(newLab);
-    }
-    res.redirect("/addPracticeLab");
-  });
-});
-
 
 // ROUTE TO ADMIN CONSOLE
 app.get("/powerzone", function(req, res) {
@@ -713,14 +763,18 @@ app.get("/powerzone", function(req, res) {
     } else {
       Promise.all([
         User.countDocuments({}),
-        PracticeLab.countDocuments({})
-      ]).then(function([userCount, practiceLabCount]) {
+        PracticeLab.countDocuments({}),
+        ExamLab.countDocuments({}),
+        Feedback.countDocuments({})
+      ]).then(function([userCount, practiceLabCount, examLabCount, feedbackCount]) {
         res.render("adminPanel/adminDash", {
           isLogined: checkLoginValidation(req),
           user: req.user,
           pageType: "dashboard",
           userCount: userCount,
-          practiceLabCount: practiceLabCount
+          practiceLabCount: practiceLabCount,
+          examLabCount: examLabCount,
+          feedbackCount: feedbackCount
         });
       });
     }
@@ -739,16 +793,26 @@ app.get("/powerzone/:setting", function(req, res) {
       });
     } else {
       if (req.params.setting === "manageUsers") {
-        res.render("adminPanel/adminManageUsers", {
-          isLogined: checkLoginValidation(req),
-          user: req.user,
-          pageType: "manageusers"
+        User.find({}, function(err, foundUsers) {
+          if (err) {
+            console.log(err);
+            res.redirect("/powerzone");
+          } else {
+            if (foundUsers) {
+              res.render("adminPanel/adminManageUsers", {
+                isLogined: checkLoginValidation(req),
+                user: req.user,
+                pageType: "manageusers",
+                foundUsers: foundUsers
+              });
+            }
+          }
         });
       } else if (req.params.setting === "practiceLabs") {
         PracticeLab.find({}, function(err, foundLab) {
           if (err) {
             console.log(err);
-            res.redirect("/dashboard");
+            res.redirect("/powerzone");
           } else {
             if (foundLab) {
               res.render("adminPanel/adminPracticeLab", {
@@ -761,22 +825,56 @@ app.get("/powerzone/:setting", function(req, res) {
           }
         });
       } else if (req.params.setting === "examLabs") {
-        res.render("adminPanel/adminManageUsers", {
-          isLogined: checkLoginValidation(req),
-          user: req.user,
-          pageType: "elabs"
-        });
-      } else if (req.params.setting === "information") {
-        res.render("adminPanel/adminManageUsers", {
-          isLogined: checkLoginValidation(req),
-          user: req.user,
-          pageType: "info"
+        ExamLab.find({}, function(err, foundLab) {
+          if (err) {
+            console.log(err);
+            res.redirect("/powerzone");
+          } else {
+            if (foundLab) {
+              res.render("adminPanel/adminExamLab", {
+                isLogined: checkLoginValidation(req),
+                user: req.user,
+                pageType: "elabs",
+                foundLab: foundLab
+              });
+            }
+          }
         });
       } else if (req.params.setting === "userFeedbacks") {
-        res.render("adminPanel/adminManageUsers", {
-          isLogined: checkLoginValidation(req),
-          user: req.user,
-          pageType: "userfeedback"
+        Feedback.find({}, function(err, feedbacks) {
+          if (err) {
+            console.log(err);
+            res.redirect("/powerzone");
+          } else {
+            if (feedbacks) {
+              res.render("adminPanel/adminFeedbackPanel", {
+                isLogined: checkLoginValidation(req),
+                user: req.user,
+                pageType: "userfeedback",
+                feedbacks: feedbacks
+              });
+            }
+          }
+        });
+      } else if (req.params.setting === "shareFiles") {
+        fs.readdir(__dirname + "/public/share/uploads", function(err, files) {
+          if (err) {
+            return console.log('Unable to scan directory: ' + err);
+          }
+          var allFiles = {};
+          files.forEach(function(file) {
+            const mydate = new Date(fs.statSync(__dirname + "/public/share/uploads/" + file).mtimeMs);
+            const month = ["January", "February", "March", "April", "May", "June",
+              "July", "August", "September", "October", "November", "December"
+            ][mydate.getMonth()];
+            allFiles[file] = mydate.getDate() + " " + month + " " + mydate.getFullYear();
+          });
+          res.render("adminPanel/adminShareFiles", {
+            isLogined: checkLoginValidation(req),
+            user: req.user,
+            pageType: "share",
+            allFiles: allFiles
+          });
         });
       } else {
         res.redirect("/powerzone");
@@ -797,7 +895,6 @@ app.post("/powerzone/:setting", function(req, res) {
       });
     } else {
       if (req.params.setting === "addPracticeLab") {
-        console.log(req.body);
         const newLab = new PracticeLab({
           thumbnailUrl: req.body.thumbnailUrl,
           catagory: req.body.catagory,
@@ -809,8 +906,6 @@ app.post("/powerzone/:setting", function(req, res) {
         newLab.save(function(err) {
           if (err) {
             console.log(err);
-          } else {
-            console.log(newLab);
           }
           res.redirect("/powerzone/practiceLabs");
         });
@@ -826,7 +921,55 @@ app.post("/powerzone/:setting", function(req, res) {
         }, function(err) {
           res.redirect("/powerzone/practiceLabs");
         });
+      } else if (req.params.setting === "suspendUser") {
+        if (req.body.accountStatus === "activate") {
+          User.updateOne({
+            _id: req.body.hiddenUserId
+          }, {
+            accountStatus: "active"
+          }, function(err) {
+            res.redirect("/powerzone/manageUsers");
+            console.log(err);
+          });
+        } else if (req.body.accountStatus === "suspend") {
+          User.updateOne({
+            _id: req.body.hiddenUserId
+          }, {
+            accountStatus: "suspended"
+          }, function(err) {
+            res.redirect("/powerzone/manageUsers");
+            console.log(err);
+          });
+        }
 
+      } else if (req.params.setting === "addExamLab") {
+        const newLab = new ExamLab({
+          thumbnailUrl: req.body.thumbnailUrl,
+          catagory: req.body.catagory,
+          labName: req.body.labName,
+          examDetails: req.body.examDetails,
+          labDataMarkdown: req.body.labDataMarkdown,
+          labDataHTML: req.body.labDataHTML,
+          terminal_ip_and_port: req.body.terminal_ip_and_port
+        });
+        newLab.save(function(err) {
+          if (err) {
+            console.log(err);
+          }
+          res.redirect("/powerzone/examLabs");
+        });
+      } else if (req.params.setting === "editExamLabForm") {
+        ExamLab.updateOne({
+          _id: req.body.labID
+        }, req.body, function(err) {
+          res.redirect("/powerzone/examLabs");
+        });
+      } else if (req.params.setting === "deleteExamLab") {
+        ExamLab.deleteOne({
+          _id: req.body.labID
+        }, function(err) {
+          res.redirect("/powerzone/examLabs");
+        });
       }
     }
 
@@ -835,6 +978,18 @@ app.post("/powerzone/:setting", function(req, res) {
   }
 });
 
+// SHARE FILE UPLOAD ROUTE
+app.post('/shareFiles', fileShare.any(), (req, res, next) => {
+  res.redirect("/powerzone/shareFiles");
+})
+
+// DELETE FILE ROUTE
+app.post("/deleteFile", function(req, res) {
+  fs.unlink(__dirname + "/public/share/uploads/" + req.body.fileName, function(err) {
+    if (err) throw err;
+  });
+  res.redirect("/powerzone/shareFiles");
+});
 
 // ERROR 404 ROUTE
 app.get("*", function(req, res) {
@@ -843,7 +998,6 @@ app.get("*", function(req, res) {
     user: req.user
   });
 });
-// https://raw.githubusercontent.com/rhythmbhiwani/whatsapp_rtu_result/master/README.md
 
 
 // LISTETING ON PORT

@@ -51,7 +51,7 @@ label {
 .splitter {
   flex: 0 0 auto;
   width: 10px;
-  background: url(/images/slider.png) center center no-repeat #343a40;
+  background: url(/images/slider.webp) center center no-repeat #343a40;
   cursor: col-resize;
 }
 
@@ -66,17 +66,53 @@ label {
 /* QUESTIONS SHOW CSS */
 .question-md h1 {
   font-size: 2rem;
+  margin-top: 4px;
+  margin-bottom: 6px;
+  font-weight: 600;
 }
 
-.question-md p {}
+.question-md h2 {
+  font-size: 1.5rem;
+  margin-top: 10px;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.question-md summary {
+  padding: 10px;
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
 
 .question-md pre {
   background-color: #F8F8F8;
-  padding: 5%;
+  padding: 15px;
   border-radius: 1px;
 }
 
-.question-md code {}
+.question-md ul li {
+  list-style-type: disc;
+  margin-left: 20px;
+}
+
+.question-md ol li {
+  list-style-type: lower-roman;
+  margin-left: 30px;
+}
+
+.question-md p {
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+.question-md img {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.question-md a {
+  color: red;
+}
 
 /* SIGNUP AND LOGIN PAGE */
 .login-and-signup-class .form-control {

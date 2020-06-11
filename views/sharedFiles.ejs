@@ -1,0 +1,35 @@
+<%- include("partials/header") -%>
+<link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+<img src="/images/sharing.svg" alt="Sharing SVG" class="my-3 mx-auto" style="width: 25%;">
+
+<div class="table-responsive mx-auto mb-3" style="width: 80%;">
+  <table class="table table-striped">
+    <thead class="thead-dark">
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">File Name</th>
+        <th scope="col">Date</th>
+        <th scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (Object.keys(allFiles).length>0) { %>
+      <% let count = 1; Object.keys(allFiles).forEach(function(file){ %>
+      <tr>
+        <th scope="row"><%=count%></th>
+        <td><%=file%></td>
+        <td><%=allFiles[file]%></td>
+        <td><a href="/share/uploads/<%=file%>" class="text-primary ml-2" download><i class="fas fa-download"></i></a></td>
+      </tr>
+      <% count++; %>
+      <% } ); %>
+      <% } else { %>
+        <tr>
+          <td colspan="4">No Files Currently</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+<%- include("partials/footerbar") -%>
+<%- include("partials/footer") -%>
