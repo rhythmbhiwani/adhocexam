@@ -14,7 +14,7 @@
 To give a platform for learners to practice, give exam, and download study materials.
 ### ENV VARIABLES
 ```
-**```GOOGLE_OAUTH_CLIENT_ID```** : Request from Google OAuth Service, your unique client ID.
+```**```GOOGLE_OAUTH_CLIENT_ID** : Request from Google OAuth Service, your unique client ID.
 ```
 ```
 **GOOGLE_OAUTH_CLIENT_SECRET** : Provided by Google, this is your OAuth Secret.
