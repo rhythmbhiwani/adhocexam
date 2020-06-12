@@ -1004,8 +1004,8 @@ app.get("*", function(req, res) {
 
 // Error handler
 app.use(function(err, req, res, next) {
-  res.status(err.status)
-  res.send({message: err.message})
+  res.redirect('https://' + req.headers.host + req.url);
+  // res.send({message: err.message})
 })
 
 // LISTETING ON PORT
