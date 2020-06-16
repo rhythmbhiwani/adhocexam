@@ -42,7 +42,7 @@ $('#userExpandModel').on('show.bs.modal', function(event) {
   $("#userProfileimg").attr('src', userProfileimg);
   $("#userFullname").text(userFullname);
   $("#userEmail").text(userEmail);
-  $("#userRoleAndStatus").text(userRole + " - " + userAccountstatus);
+  $("#userRoleAndStatus").text(userAccountstatus);
   $("#userBio").text(userBio);
   if (userGithub) {
     $("#userGithub").attr('href', "https://github.com/" + userGithub);
