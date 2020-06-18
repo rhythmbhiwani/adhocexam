@@ -303,7 +303,7 @@ app.get('/auth/google/googlelogin',
   }),
   function(req, res) {
     const accountStatus = req.user.accountStatus;
-    if (req.user.accountStatus != "active") {
+    if (accountStatus != "active") {
       req.logout();
       res.render("login", {
         isLogined: checkLoginValidation(req),
@@ -329,7 +329,7 @@ app.get('/auth/facebook/facebooklogin',
   }),
   function(req, res) {
     const accountStatus = req.user.accountStatus;
-    if (req.user.accountStatus != "active") {
+    if (accountStatus != "active") {
       req.logout();
       res.render("login", {
         isLogined: checkLoginValidation(req),
@@ -548,7 +548,9 @@ app.get("/sharedfiles", function(req, res) {
         const month = ["January", "February", "March", "April", "May", "June",
           "July", "August", "September", "October", "November", "December"
         ][mydate.getMonth()];
-        allFiles[file] = mydate.getDate() + " " + month + " " + mydate.getFullYear();
+        if (file !== "nomedia") {
+          allFiles[file] = mydate.getDate() + " " + month + " " + mydate.getFullYear();
+        }
       });
 
       res.render("sharedFiles", {
@@ -870,7 +872,9 @@ app.get("/powerzone/:setting", function(req, res) {
             const month = ["January", "February", "March", "April", "May", "June",
               "July", "August", "September", "October", "November", "December"
             ][mydate.getMonth()];
-            allFiles[file] = mydate.getDate() + " " + month + " " + mydate.getFullYear();
+            if (file !== "nomedia") {
+              allFiles[file] = mydate.getDate() + " " + month + " " + mydate.getFullYear();
+            }
           });
           res.render("adminPanel/adminShareFiles", {
             isLogined: checkLoginValidation(req),
