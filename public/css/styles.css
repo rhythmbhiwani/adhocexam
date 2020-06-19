@@ -271,7 +271,7 @@ label {
 hr.pacman {
   border: 0;
   height: 25px;
-  background-image: url('http://www.formget.com/wp-content/uploads/2014/12/type_3.png');
+  background-image: url('/images/hr.png');
   background-repeat: no-repeat;
   background-position: center;
 }
