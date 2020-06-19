@@ -50,7 +50,8 @@
         <% } %>
       </div>
       <div class="modal-body text-center">
-        <img class="rounded-circle w-50 mx-auto" src="https://media.giphy.com/media/fUwOs80ja3sTPpjndh/giphy.gif" alt="time up gif">
+        <% const randomTimeUpImage = "/images/timeUp"+(Math.floor((Math.random() * 5)+1))+".gif" %>
+        <img class="rounded-circle w-50 mx-auto" src="<%=randomTimeUpImage%>" alt="time up gif">
         <br>
         Your examination time is now over!
       </div>

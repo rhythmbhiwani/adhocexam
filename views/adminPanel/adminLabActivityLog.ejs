@@ -1,0 +1,79 @@
+<%- include("../partials/admin/adminHeader") %>
+<%- include("../partials/admin/adminSidebar") %>
+<%- include("../partials/admin/adminTopbar") %>
+<!-- Custom styles for this page -->
+<link href="/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/css/admincss.css">
+
+<!-- Begin Page Content -->
+<div class="container-fluid">
+  <!-- Page Heading -->
+  <h1 class="h3 mb-2 text-gray-800">Labs Activity Logs</h1>
+
+  <!-- DataTales Example -->
+  <div class="card shadow mb-4">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Mode</th>
+              <th>Email</th>
+              <th>Lab Name</th>
+              <th>Type</th>
+              <th>Date and Time</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <th>#</th>
+              <th>Mode</th>
+              <th>Email</th>
+              <th>Lab Name</th>
+              <th>Type</th>
+              <th>Date and Time</th>
+              <th>Score</th>
+            </tr>
+          </tfoot>
+          <tbody>
+            <% let srno = 1; %>
+            <% activityLogs.reverse(); %>
+            <% if (activityLogs.length > 0) { %>
+              <% activityLogs.forEach(function(log){ %>
+                <tr>
+                  <td class="align-middle text-center"><%=srno%></td>
+                  <% if(log.userLoginMethod === "facebook") { %>
+                  <td class="align-middle text-center"><span class="d-none">facebook</span><img src="/images/facebookLogo.webp" style="width:40px;" alt="facebook"></img></td>
+                  <% } else if(log.userLoginMethod === "google") { %>
+                  <td class="align-middle text-center"><span class="d-none">google</span><img src="/images/googleLogo.webp" style="width:40px;" alt="google"></td>
+                  <% } else if(log.userLoginMethod === "local") { %>
+                  <td class="align-middle text-center"><span class="d-none">local</span><img src="/images/adhocLogo.webp" style="width:40px;" alt="local"></td>
+                  <% }%>
+                  <td class="align-middle text-center"><%=log.userEmail%></td>
+                  <td class="align-middle text-center text-capitalize"><%=log.labName%></td>
+                  <td class="align-middle text-center"><%=log.labType%></td>
+                  <td class="align-middle text-center"><%=log.labAccessDateAndTime%></td>
+                  <td class="align-middle text-center"><%=log.labScore%></td>
+                </tr>
+                <% srno++; %>
+              <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- /.container-fluid -->
+
+<script defer src="/js/adminScript.js" charset="utf-8"></script>
+<!-- Page level plugins -->
+<script defer src="/vendor/datatables/jquery.dataTables.min.js"></script>
+<script defer src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+<!-- Page level custom scripts -->
+<script defer src="/js/demo/datatables-demo.js"></script>
+<%- include("../partials/admin/adminFooter") %>

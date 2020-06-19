@@ -57,6 +57,18 @@ mongoose.connect(process.env.MONGODB_SERVER_URL + "/adhocnwDB", {
 });
 mongoose.set("useCreateIndex", true);
 
+// ACTIVITY LOG SCHEMA
+const activitylogSchema = new mongoose.Schema({
+  userId: String,
+  userLoginMethod: String,
+  userEmail: String,
+  labName: String,
+  labType: String,
+  labAccessDateAndTime: String,
+  labScore: String
+});
+const ActivityLog = new mongoose.model("ActivityLog", activitylogSchema);
+
 // PRACTICE LAB SCHEMA
 const practiceSchema = new mongoose.Schema({
   thumbnailUrl: String,
@@ -251,8 +263,26 @@ app.get("/questions/:labID", function(req, res) {
         res.redirect("/dashboard");
       } else {
         if (foundLab) {
-          const currentDateAndTime = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+          const currentDateAndTime = new Date(new Date().toLocaleString("en-US", {
+            timeZone: "Asia/Kolkata"
+          }));
           if (new Date(foundLab[0].startDateAndTime) <= currentDateAndTime && new Date(foundLab[0].endDateAndTime) >= currentDateAndTime || req.user.role === "superuser") {
+            if (req.user.role !== "superuser") {
+              const activity = new ActivityLog({
+                userId: req.user._id,
+                userLoginMethod: req.user.loginMethod,
+                userEmail: req.user[req.user.loginMethod].email,
+                labName: foundLab[0].labName,
+                labType: "Exam Lab",
+                labAccessDateAndTime: currentDateAndTime,
+                labScore: "Not Scored Yet"
+              });
+              activity.save(function(err) {
+                if (err) {
+                  console.log(err);
+                }
+              });
+            }
             res.render("questionPanel", {
               isLogined: checkLoginValidation(req),
               user: req.user,
@@ -282,6 +312,25 @@ app.get("/practice/:labID", function(req, res) {
         res.redirect("/404");
       } else {
         if (foundLab) {
+          if (req.user.role !== "superuser") {
+            const currentDateAndTime = new Date(new Date().toLocaleString("en-US", {
+              timeZone: "Asia/Kolkata"
+            }));
+            const activity = new ActivityLog({
+              userId: req.user._id,
+              userLoginMethod: req.user.loginMethod,
+              userEmail: req.user[req.user.loginMethod].email,
+              labName: foundLab[0].labName,
+              labType: "Practice Lab",
+              labAccessDateAndTime: currentDateAndTime,
+              labScore: "Not Applicable"
+            });
+            activity.save(function(err) {
+              if (err) {
+                console.log(err);
+              }
+            });
+          }
           res.render("practicePanel", {
             user: req.user,
             isLogined: checkLoginValidation(req),
@@ -528,7 +577,9 @@ app.get("/dashboard", function(req, res) {
                   user: req.user,
                   foundLab: foundLab,
                   examFoundLabs: examFoundLabs,
-                  getCurrentDateAndTime: new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}))
+                  getCurrentDateAndTime: new Date(new Date().toLocaleString("en-US", {
+                    timeZone: "Asia/Kolkata"
+                  }))
                 });
               }
             }
@@ -865,6 +916,22 @@ app.get("/powerzone/:setting", function(req, res) {
                 user: req.user,
                 pageType: "userfeedback",
                 feedbacks: feedbacks
+              });
+            }
+          }
+        });
+      } else if (req.params.setting === "labActivityLog") {
+        ActivityLog.find({}, function(err, foundLogs){
+          if (err) {
+            console.log(err);
+            res.redirect("/powerzone/labActivityLog");
+          } else {
+            if (foundLogs) {
+              res.render("adminPanel/adminLabActivityLog", {
+                isLogined: checkLoginValidation(req),
+                user: req.user,
+                pageType: "labActivityLog",
+                activityLogs: foundLogs
               });
             }
           }
