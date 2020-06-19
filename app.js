@@ -958,7 +958,6 @@ app.post("/powerzone/:setting", function(req, res) {
         }
 
       } else if (req.params.setting === "addExamLab") {
-        console.log(req.body);
         const newLab = new ExamLab({
           thumbnailUrl: req.body.thumbnailUrl,
           catagory: req.body.catagory,
