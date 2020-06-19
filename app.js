@@ -76,7 +76,9 @@ const examSchema = new mongoose.Schema({
   examDetails: String,
   labDataMarkdown: String,
   labDataHTML: String,
-  terminal_ip_and_port: String
+  terminal_ip_and_port: String,
+  startDateAndTime: String,
+  endDateAndTime: String
 });
 const ExamLab = new mongoose.model("ExamLab", examSchema);
 
@@ -249,11 +251,16 @@ app.get("/questions/:labID", function(req, res) {
         res.redirect("/dashboard");
       } else {
         if (foundLab) {
-          res.render("questionPanel", {
-            isLogined: checkLoginValidation(req),
-            user: req.user,
-            foundLab: foundLab
-          });
+          const currentDateAndTime = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+          if (new Date(foundLab[0].startDateAndTime) <= currentDateAndTime && new Date(foundLab[0].endDateAndTime) >= currentDateAndTime || req.user.role === "superuser") {
+            res.render("questionPanel", {
+              isLogined: checkLoginValidation(req),
+              user: req.user,
+              foundLab: foundLab
+            });
+          } else {
+            res.redirect("/dashboard");
+          }
         } else {
           res.redirect("/dashboard");
         }
@@ -520,7 +527,8 @@ app.get("/dashboard", function(req, res) {
                   isLogined: checkLoginValidation(req),
                   user: req.user,
                   foundLab: foundLab,
-                  examFoundLabs: examFoundLabs
+                  examFoundLabs: examFoundLabs,
+                  getCurrentDateAndTime: new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}))
                 });
               }
             }
@@ -950,6 +958,7 @@ app.post("/powerzone/:setting", function(req, res) {
         }
 
       } else if (req.params.setting === "addExamLab") {
+        console.log(req.body);
         const newLab = new ExamLab({
           thumbnailUrl: req.body.thumbnailUrl,
           catagory: req.body.catagory,
@@ -957,7 +966,9 @@ app.post("/powerzone/:setting", function(req, res) {
           examDetails: req.body.examDetails,
           labDataMarkdown: req.body.labDataMarkdown,
           labDataHTML: req.body.labDataHTML,
-          terminal_ip_and_port: req.body.terminal_ip_and_port
+          terminal_ip_and_port: req.body.terminal_ip_and_port,
+          startDateAndTime: req.body.startDateAndTime,
+          endDateAndTime: req.body.endDateAndTime
         });
         newLab.save(function(err) {
           if (err) {
@@ -1009,7 +1020,7 @@ app.get("*", function(req, res) {
 // Error handler
 app.use(function(err, req, res, next) {
   res.redirect('https://' + req.headers.host + req.url);
-  // res.send({message: err.message})
+  console.log("Redirected");
 })
 
 // LISTETING ON PORT

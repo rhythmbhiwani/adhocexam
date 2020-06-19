@@ -95,13 +95,13 @@ function addExamLab() {
       }
     }
   });
-  if (labDataArray[5].value.trim() !== "") {
+  if (labDataArray[7].value.trim() !== "") {
     $.ajax({
       type: "POST",
       dataType: "html",
       processData: false,
       url: "https://api.github.com/markdown/raw",
-      data: labDataArray[5].value,
+      data: labDataArray[7].value,
       contentType: "text/plain",
       success: function(data) {
         $("#AddExamLabForm").find("input[name=labDataHTML]").remove();
@@ -139,6 +139,8 @@ $('#EditExamLab').on('show.bs.modal', function(event) {
   const examDetails = button.data('examDetails');
   const thumbnailUrl = button.data('thumbnailUrl');
   const labDataMarkdown = button.data('labDataMarkdown');
+  const startDateAndTime = button.data('startDateAndTime');
+  const endDateAndTime = button.data('endDateAndTime');
   const labId = button.data('labId');
   const modal = $(this);
   modal.find('.modal-title').text('Edit Lab: ' + labName);
@@ -147,6 +149,8 @@ $('#EditExamLab').on('show.bs.modal', function(event) {
   modal.find('.modal-body #terminal_ip_and_port').val(terminalIpAndPort);
   modal.find('.modal-body #examDetails').val(examDetails);
   modal.find('.modal-body #thumbnailUrl').val(thumbnailUrl);
+  modal.find('.modal-body #startDateAndTime').val(startDateAndTime);
+  modal.find('.modal-body #endDateAndTime').val(endDateAndTime);
   modal.find('.modal-body #labDataMarkdown').val(labDataMarkdown);
   $('#EditExamLab #labID').val(labId);
 });
@@ -162,13 +166,13 @@ function editExamLab() {
       }
     }
   });
-  if (labDataArray[6].value.trim() !== "") {
+  if (labDataArray[8].value.trim() !== "") {
     $.ajax({
       type: "POST",
       dataType: "html",
       processData: false,
       url: "https://api.github.com/markdown/raw",
-      data: labDataArray[6].value,
+      data: labDataArray[8].value,
       contentType: "text/plain",
       success: function(data) {
         $("#editExamLabForm").find("input[name=labDataHTML]").remove();
