@@ -17,6 +17,17 @@ const imguploadpath = multer({
 const passportLocalMongoose = require('passport-local-mongoose');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
+const nodemailer = require('nodemailer');
+const randomToken = require('random-token');
+
+// NODEMAILER TRANSPORTER
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.BOT_GMAIL_ID,
+    pass: process.env.BOT_GMAIL_PASSWORD
+  }
+});
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -109,6 +120,7 @@ const userSchema = new mongoose.Schema({
   loginMethod: String,
   role: String,
   accountStatus: String,
+  verificationToken: String,
   githubURL: String,
   linkedinURL: String,
   bio: String,
@@ -157,6 +169,18 @@ function deleteFile(req) {
     if (err) throw err;
   });
 }
+
+// FUNCTION TO GET MAIL OPTIONS
+function getMailOptions(to, subject, content) {
+  const mailOptions = {
+    from: process.env.BOT_GMAIL_ID,
+    to: to,
+    subject: subject,
+    text: content
+  };
+  return mailOptions;
+}
+
 
 // SETTING GOOGLE LOGIN STRATEGY
 passport.use(new GoogleStrategy({
@@ -259,7 +283,7 @@ app.get("/questions/:labID", function(req, res) {
       _id: req.params.labID
     }, function(err, foundLab) {
       if (err) {
-        console.log(err);
+        console.log("ERROR FIND QUESTION " + err);
         res.redirect("/dashboard");
       } else {
         if (foundLab) {
@@ -279,7 +303,7 @@ app.get("/questions/:labID", function(req, res) {
               });
               activity.save(function(err) {
                 if (err) {
-                  console.log(err);
+                  console.log("SAVING ACTIVITY FAILED " + err);
                 }
               });
             }
@@ -308,7 +332,7 @@ app.get("/practice/:labID", function(req, res) {
       _id: req.params.labID
     }, function(err, foundLab) {
       if (err) {
-        console.log(err);
+        console.log("ERROR FINDING PRACTICE LAB " + err);
         res.redirect("/404");
       } else {
         if (foundLab) {
@@ -327,7 +351,7 @@ app.get("/practice/:labID", function(req, res) {
             });
             activity.save(function(err) {
               if (err) {
-                console.log(err);
+                console.log("ERROR SAVING ACTIVITY " + err);
               }
             });
           }
@@ -445,7 +469,7 @@ app.post("/signup", function(req, res) {
           username: givenUsername
         }, givenPassword1, function(err, user) {
           if (err) {
-            console.log(err);
+            console.log("ERROR REGISTERING NEW USER " + err);
             res.redirect("/signup");
           } else {
             user.local = {
@@ -455,10 +479,11 @@ app.post("/signup", function(req, res) {
             }
             user.loginMethod = "local";
             user.role = "standard";
-            user.accountStatus = "active";
+            user.accountStatus = "pending";
+            user.verificationToken = randomToken(24);
             user.save();
             passport.authenticate("local")(req, res, function() {
-              res.redirect("/dashboard");
+              res.redirect("/verifyEmail");
             });
           }
         });
@@ -557,18 +582,26 @@ app.post('/login', function(req, res, next) {
 });
 
 
+// VERIFY EMAIL ROUTE
+app.get("/verifyEmail", function(req,res){
+  res.render("verifyEmail",{
+    user: req.user,
+    isLogined: checkLoginValidation(req)
+  });
+});
+
 // DASHBOARD ROUTE
 app.get("/dashboard", function(req, res) {
   if (req.isAuthenticated()) {
     PracticeLab.find({}, function(err, foundLab) {
       if (err) {
-        console.log(err);
+        console.log("ERROR SEARCHING PRACTICE LAB " + err);
         res.redirect("/dashboard");
       } else {
         if (foundLab) {
           ExamLab.find({}, function(err, examFoundLabs) {
             if (err) {
-              console.log(err);
+              console.log("ERROR FINDING EXAM LAB " + err);
               res.redirect("/dashboard");
             } else {
               if (examFoundLabs) {
@@ -688,7 +721,7 @@ app.post("/profile-info-update", function(req, res) {
   if (req.isAuthenticated()) {
     User.findById(req.user.id, function(err, foundUser) {
       if (err) {
-        console.log(err);
+        console.log("ERROR FINDING USER " + err);
         res.redirect("/profile");
       } else {
         if (foundUser) {
@@ -741,7 +774,7 @@ app.post('/upload/img', imguploadpath.single('profile_img'), (req, res) => {
         deleteFile(req);
       })
   } else {
-    console.log("Error");
+    console.log("Error uploading profile pic");
     deleteFile(req);
     res.redirect("/profile");
   };
@@ -781,7 +814,7 @@ app.post("/changePassword", function(req, res) {
     } else {
       req.user.changePassword(profile_currentPassword, profile_newPassword, function(err) {
         if (err) {
-          console.log(err);
+          console.log("CHANGE PASSWORD ERROR " + err);
           res.render("profile", {
             isLogined: checkLoginValidation(req),
             user: req.user,
@@ -859,7 +892,7 @@ app.get("/powerzone/:setting", function(req, res) {
       if (req.params.setting === "manageUsers") {
         User.find({}, function(err, foundUsers) {
           if (err) {
-            console.log(err);
+            console.log("USER FIND ERROR " + err);
             res.redirect("/powerzone");
           } else {
             if (foundUsers) {
@@ -875,7 +908,7 @@ app.get("/powerzone/:setting", function(req, res) {
       } else if (req.params.setting === "practiceLabs") {
         PracticeLab.find({}, function(err, foundLab) {
           if (err) {
-            console.log(err);
+            console.log("ERROR FINDING PRACTICE LAB " + err);
             res.redirect("/powerzone");
           } else {
             if (foundLab) {
@@ -891,7 +924,7 @@ app.get("/powerzone/:setting", function(req, res) {
       } else if (req.params.setting === "examLabs") {
         ExamLab.find({}, function(err, foundLab) {
           if (err) {
-            console.log(err);
+            console.log("ERROR FINDING EXAM LAB " + err);
             res.redirect("/powerzone");
           } else {
             if (foundLab) {
@@ -907,7 +940,7 @@ app.get("/powerzone/:setting", function(req, res) {
       } else if (req.params.setting === "userFeedbacks") {
         Feedback.find({}, function(err, feedbacks) {
           if (err) {
-            console.log(err);
+            console.log("ERROR FINDING FEEDBACKS " + err);
             res.redirect("/powerzone");
           } else {
             if (feedbacks) {
@@ -921,9 +954,9 @@ app.get("/powerzone/:setting", function(req, res) {
           }
         });
       } else if (req.params.setting === "labActivityLog") {
-        ActivityLog.find({}, function(err, foundLogs){
+        ActivityLog.find({}, function(err, foundLogs) {
           if (err) {
-            console.log(err);
+            console.log("ERROR FINDING ACTIVITY LOG " + err);
             res.redirect("/powerzone/labActivityLog");
           } else {
             if (foundLogs) {
@@ -987,7 +1020,7 @@ app.post("/powerzone/:setting", function(req, res) {
         });
         newLab.save(function(err) {
           if (err) {
-            console.log(err);
+            console.log("ERROR SAVING NEW PRACTICE LAB " + err);
           }
           res.redirect("/powerzone/practiceLabs");
         });
@@ -1011,7 +1044,7 @@ app.post("/powerzone/:setting", function(req, res) {
             accountStatus: "active"
           }, function(err) {
             res.redirect("/powerzone/manageUsers");
-            console.log(err);
+            console.log("ERROR UPDATING USER STATUS " + err);
           });
         } else if (req.body.accountStatus === "suspend") {
           User.updateOne({
@@ -1020,7 +1053,7 @@ app.post("/powerzone/:setting", function(req, res) {
             accountStatus: "suspended"
           }, function(err) {
             res.redirect("/powerzone/manageUsers");
-            console.log(err);
+            console.log("ERROR UPDATING USER STATUS " + err);
           });
         }
 
@@ -1038,7 +1071,7 @@ app.post("/powerzone/:setting", function(req, res) {
         });
         newLab.save(function(err) {
           if (err) {
-            console.log(err);
+            console.log("ERROR SAVING NEW EXAM LAB " + err);
           }
           res.redirect("/powerzone/examLabs");
         });
@@ -1084,10 +1117,10 @@ app.get("*", function(req, res) {
 });
 
 // Error handler
-app.use(function(err, req, res, next) {
-  res.redirect('https://' + req.headers.host + req.url);
-  console.log("Redirected");
-})
+// app.use(function(err, req, res, next) {
+//   res.redirect('https://' + req.headers.host + req.url);
+//   console.log("Redirected");
+// })
 
 // LISTETING ON PORT
 const port = process.env.PORT || 3000;

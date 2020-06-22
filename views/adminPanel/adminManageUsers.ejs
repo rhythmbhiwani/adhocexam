@@ -64,7 +64,7 @@
               <td class="align-middle text-center"><%=foundUser.role%></td>
               <td class="align-middle text-center <%=statusColorClass%>"><%=foundUser.accountStatus%></td>
               <td class="align-middle text-center">
-                <% if (foundUser.accountStatus !== "suspended") { %>
+                <% if (foundUser.accountStatus !== "suspended" && foundUser.accountStatus !== "pending") { %>
                 <a href="#" data-toggle="modal" data-target="#suspendOrActivateAccount" data-user-id="<%=foundUser._id%>" data-user-name="<%=foundUser[loginMethod].fullname%>" data-todo="suspend"><i data-toggle="tooltip" data-placement="left"
                     title="Suspend Account" class="fas fa-times-circle text-danger" style="font-size: 25px;"></i></a>
                 <% } else { %>
@@ -147,7 +147,7 @@
   </div>
 </div>
 
-<script defer src="/js/adminScript.js" charset="utf-8"></script>
+<script defer src="/js/obfuscatedadminscript.js" charset="utf-8"></script>
 <!-- Page level plugins -->
 <script defer src="/vendor/datatables/jquery.dataTables.min.js"></script>
 <script defer src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
