@@ -1,8 +1,28 @@
 <%- include("partials/header") -%>
 
-<div class="">
-  <%=user%>
+<div class="jumbotron jumbotron-fluid m-3">
+  <div class="container text-center">
+    <h1 class="display-4">Verify your email!</h1>
+    <p class="lead">Thank you <em><%=user.local.fullname%></em> for signing up!</p>
+    <p class="lead">An verification email has been send on your email id <em><%=user.username%></em></p>
+    <p>If mail is not received, please check your spam folder</p>
+    <p>You will not be able to use the portal without verification</p>
+    <hr class="pacman my-4">
+    <p>If you want a new verification email, please click the button below.</p>
+    <p>Please contact on support if you are not able to verify for any reason.</p>
+    <a class="btn btn-dark btn-lg my-4" href="/resendToken" role="button">Resend</a>
+    <a class="btn btn-primary btn-lg my-4" href="/support" role="button">Support</a>
+    <% if (action === "resend") { %>
+      <div class="alert alert-success" role="alert">
+        Verification Mail sent successfully! Don't forget to check spam area.
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    <% } %>
+  </div>
 </div>
+
 
 
 <%- include("partials/footerbar") -%>

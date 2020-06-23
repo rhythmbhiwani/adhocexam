@@ -120,7 +120,6 @@ const userSchema = new mongoose.Schema({
   loginMethod: String,
   role: String,
   accountStatus: String,
-  verificationToken: String,
   githubURL: String,
   linkedinURL: String,
   bio: String,
@@ -153,6 +152,26 @@ passport.deserializeUser(function(id, done) {
     done(err, user);
   });
 });
+
+// SCHEMA FOR VERIFICATION TOKENS
+const tokenSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
+  token: {
+    type: String,
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    required: true,
+    default: Date.now,
+    expires: 43200
+  }
+});
+const Token = new mongoose.model("Token", tokenSchema);
+
 
 // FUCNTION TO CHECK IF USER IS AUTHENTICATED OR NOT
 function checkLoginValidation(req) {
@@ -279,48 +298,53 @@ app.get("/", function(req, res) {
 
 app.get("/questions/:labID", function(req, res) {
   if (req.isAuthenticated()) {
-    ExamLab.find({
-      _id: req.params.labID
-    }, function(err, foundLab) {
-      if (err) {
-        console.log("ERROR FIND QUESTION " + err);
-        res.redirect("/dashboard");
-      } else {
-        if (foundLab) {
-          const currentDateAndTime = new Date(new Date().toLocaleString("en-US", {
-            timeZone: "Asia/Kolkata"
-          }));
-          if (new Date(foundLab[0].startDateAndTime) <= currentDateAndTime && new Date(foundLab[0].endDateAndTime) >= currentDateAndTime || req.user.role === "superuser") {
-            if (req.user.role !== "superuser") {
-              const activity = new ActivityLog({
-                userId: req.user._id,
-                userLoginMethod: req.user.loginMethod,
-                userEmail: req.user[req.user.loginMethod].email,
-                labName: foundLab[0].labName,
-                labType: "Exam Lab",
-                labAccessDateAndTime: currentDateAndTime,
-                labScore: "Not Scored Yet"
+    if (req.user.accountStatus === "pending") {
+      res.redirect("/verifyEmail");
+    } else if (req.user.accountStatus === "suspended") {
+      res.redirect("/logout");
+    } else {
+      ExamLab.find({
+        _id: req.params.labID
+      }, function(err, foundLab) {
+        if (err) {
+          console.log("ERROR FIND QUESTION " + err);
+          res.redirect("/dashboard");
+        } else {
+          if (foundLab) {
+            const currentDateAndTime = new Date(new Date().toLocaleString("en-US", {
+              timeZone: "Asia/Kolkata"
+            }));
+            if (new Date(foundLab[0].startDateAndTime) <= currentDateAndTime && new Date(foundLab[0].endDateAndTime) >= currentDateAndTime || req.user.role === "superuser") {
+              if (req.user.role !== "superuser") {
+                const activity = new ActivityLog({
+                  userId: req.user._id,
+                  userLoginMethod: req.user.loginMethod,
+                  userEmail: req.user[req.user.loginMethod].email,
+                  labName: foundLab[0].labName,
+                  labType: "Exam Lab",
+                  labAccessDateAndTime: currentDateAndTime,
+                  labScore: "Not Scored Yet"
+                });
+                activity.save(function(err) {
+                  if (err) {
+                    console.log("SAVING ACTIVITY FAILED " + err);
+                  }
+                });
+              }
+              res.render("questionPanel", {
+                isLogined: checkLoginValidation(req),
+                user: req.user,
+                foundLab: foundLab
               });
-              activity.save(function(err) {
-                if (err) {
-                  console.log("SAVING ACTIVITY FAILED " + err);
-                }
-              });
+            } else {
+              res.redirect("/dashboard");
             }
-            res.render("questionPanel", {
-              isLogined: checkLoginValidation(req),
-              user: req.user,
-              foundLab: foundLab
-            });
           } else {
             res.redirect("/dashboard");
           }
-        } else {
-          res.redirect("/dashboard");
         }
-      }
-    });
-
+      });
+    }
   } else {
     res.redirect("/login");
   }
@@ -328,44 +352,50 @@ app.get("/questions/:labID", function(req, res) {
 
 app.get("/practice/:labID", function(req, res) {
   if (req.isAuthenticated()) {
-    PracticeLab.find({
-      _id: req.params.labID
-    }, function(err, foundLab) {
-      if (err) {
-        console.log("ERROR FINDING PRACTICE LAB " + err);
-        res.redirect("/404");
-      } else {
-        if (foundLab) {
-          if (req.user.role !== "superuser") {
-            const currentDateAndTime = new Date(new Date().toLocaleString("en-US", {
-              timeZone: "Asia/Kolkata"
-            }));
-            const activity = new ActivityLog({
-              userId: req.user._id,
-              userLoginMethod: req.user.loginMethod,
-              userEmail: req.user[req.user.loginMethod].email,
-              labName: foundLab[0].labName,
-              labType: "Practice Lab",
-              labAccessDateAndTime: currentDateAndTime,
-              labScore: "Not Applicable"
-            });
-            activity.save(function(err) {
-              if (err) {
-                console.log("ERROR SAVING ACTIVITY " + err);
-              }
-            });
-          }
-          res.render("practicePanel", {
-            user: req.user,
-            isLogined: checkLoginValidation(req),
-            foundLab: foundLab[0],
-            dashboardIP: process.env.LOGIN_CALLBACK_URL
-          });
-        } else {
+    if (req.user.accountStatus === "pending") {
+      res.redirect("/verifyEmail");
+    } else if (req.user.accountStatus === "suspended") {
+      res.redirect("/logout");
+    } else {
+      PracticeLab.find({
+        _id: req.params.labID
+      }, function(err, foundLab) {
+        if (err) {
+          console.log("ERROR FINDING PRACTICE LAB " + err);
           res.redirect("/404");
+        } else {
+          if (foundLab) {
+            if (req.user.role !== "superuser") {
+              const currentDateAndTime = new Date(new Date().toLocaleString("en-US", {
+                timeZone: "Asia/Kolkata"
+              }));
+              const activity = new ActivityLog({
+                userId: req.user._id,
+                userLoginMethod: req.user.loginMethod,
+                userEmail: req.user[req.user.loginMethod].email,
+                labName: foundLab[0].labName,
+                labType: "Practice Lab",
+                labAccessDateAndTime: currentDateAndTime,
+                labScore: "Not Applicable"
+              });
+              activity.save(function(err) {
+                if (err) {
+                  console.log("ERROR SAVING ACTIVITY " + err);
+                }
+              });
+            }
+            res.render("practicePanel", {
+              user: req.user,
+              isLogined: checkLoginValidation(req),
+              foundLab: foundLab[0],
+              dashboardIP: process.env.LOGIN_CALLBACK_URL
+            });
+          } else {
+            res.redirect("/404");
+          }
         }
-      }
-    });
+      });
+    }
   } else {
     res.redirect("/login");
   }
@@ -480,8 +510,27 @@ app.post("/signup", function(req, res) {
             user.loginMethod = "local";
             user.role = "standard";
             user.accountStatus = "pending";
-            user.verificationToken = randomToken(24);
             user.save();
+            const token = new Token({
+              userId: user._id,
+              token: randomToken(24)
+            });
+            token.save(function(err) {
+              if (err) {
+                console.log("ERROR SAVING TOKEN " + err);
+                res.redirect("/signup");
+              } else {
+                const content = "Thank you for signing up on AdHoc Networks Exam Portal.\nPlease follow this link to verify your email.\nThis link is valid only for 12 hours after requesting it.\nVerification Link: http://" + req.headers.host + "/verify/" + token.token + "/" + user._id;
+                const mailOptions = getMailOptions(user.username, "AdHoc Networks - Verify you email", content);
+                transporter.sendMail(mailOptions, function(err) {
+                  if (err) {
+                    return res.status(500).send({
+                      msg: err.message
+                    });
+                  }
+                });
+              }
+            });
             passport.authenticate("local")(req, res, function() {
               res.redirect("/verifyEmail");
             });
@@ -506,7 +555,6 @@ app.post("/signup", function(req, res) {
 
 // LOCAL LOGIN ROUTE
 app.post('/login', function(req, res, next) {
-  /* look at the 2nd parameter to the below call */
   let errors = [];
   const givenUsername = req.body.username;
   const givenPassword = req.body.password;
@@ -519,7 +567,7 @@ app.post('/login', function(req, res, next) {
     username: givenUsername
   }, function(err, foundUser) {
     if (err) {
-      console.log("LOGIN :" + err);
+      console.log("ERROR FINDING USER " + err);
       res.redirect("/login");
     } else {
       if (!foundUser) {
@@ -536,7 +584,16 @@ app.post('/login', function(req, res, next) {
           }
         });
       } else {
-        if (foundUser.accountStatus != "active") {
+        if (foundUser.accountStatus === "pending") {
+          passport.authenticate('local', function(err, user, info) {
+            req.logIn(user, function(err) {
+              if (err) {
+                return next(err);
+              }
+              return res.redirect('/verifyEmail');
+            });
+          })(req, res, next);
+        } else if (foundUser.accountStatus != "active") {
           errors.push({
             message: "Cannot login, your account is in " + foundUser.accountStatus + " state!"
           });
@@ -583,44 +640,136 @@ app.post('/login', function(req, res, next) {
 
 
 // VERIFY EMAIL ROUTE
-app.get("/verifyEmail", function(req,res){
-  res.render("verifyEmail",{
-    user: req.user,
-    isLogined: checkLoginValidation(req)
-  });
+app.get("/verifyEmail", function(req, res) {
+  if (req.isAuthenticated()) {
+    if (req.user.accountStatus === "active") {
+      res.redirect("/dashboard");
+    } else {
+      res.render("verifyEmail", {
+        user: req.user,
+        isLogined: checkLoginValidation(req),
+        action: "verify"
+      });
+    }
+  } else {
+    res.redirect("/login");
+  }
+});
+
+// ROUTE TO VERIFY EMAIL IDs
+app.get("/verify/:submittedToken/:userId", function(req, res) {
+  if (req.isAuthenticated() && req.user.accountStatus === "active") {
+    res.redirect("/dashboard");
+  } else {
+    Token.findOne({
+      token: req.params.submittedToken,
+      userId: req.params.userId
+    }, function(err, foundToken) {
+      if (err) {
+        console.log("ERROR FINDING TOKEN : " + err);
+      } else {
+        if (foundToken) {
+          User.findOne({
+            _id: req.params.userId
+          }, function(err, foundUser) {
+            if (err) {
+              console.log("ERROR FINDING USER " + err);
+            } else {
+              if (foundUser) {
+                foundUser.accountStatus = "active";
+                foundUser.save(function(err) {
+                  if (err) {
+                    console.log("ERROR UPDATING USER ACCOUT STATUS " + err);
+                    res.redirect("/login");
+                  } else {
+                    res.redirect("/dashboard");
+                  }
+                });
+              }
+            }
+          });
+        } else {
+          res.redirect("/verifyEmail");
+        }
+      }
+    });
+  }
+});
+
+// RESEND TOKEN ROUTE
+app.get("/resendToken", function(req, res) {
+  if (req.isAuthenticated()) {
+    if (req.user.accountStatus === "active") {
+      res.redirect("/dashboard");
+    } else if (req.user.accountStatus === "pending") {
+      const token = new Token({
+        userId: req.user._id,
+        token: randomToken(24)
+      });
+      token.save(function(err) {
+        if (err) {
+          console.log("ERROR SAVING TOKEN " + err);
+          res.redirect("/signup");
+        } else {
+          const content = "Thank you for signing up on AdHoc Networks Exam Portal.\nPlease follow this link to verify your email.\nThis link is valid only for 12 hours after requesting it.\nVerification Link: http://" + req.headers.host + "/verify/" + token.token + "/" + req.user._id;
+          const mailOptions = getMailOptions(req.user.username, "AdHoc Networks - Verify you email", content);
+          transporter.sendMail(mailOptions, function(err) {
+            if (err) {
+              return res.status(500).send({
+                msg: err.message
+              });
+            }
+          });
+        }
+      });
+      res.render("verifyEmail", {
+        user: req.user,
+        isLogined: checkLoginValidation(req),
+        action: "resend"
+      });
+    }
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // DASHBOARD ROUTE
 app.get("/dashboard", function(req, res) {
   if (req.isAuthenticated()) {
-    PracticeLab.find({}, function(err, foundLab) {
-      if (err) {
-        console.log("ERROR SEARCHING PRACTICE LAB " + err);
-        res.redirect("/dashboard");
-      } else {
-        if (foundLab) {
-          ExamLab.find({}, function(err, examFoundLabs) {
-            if (err) {
-              console.log("ERROR FINDING EXAM LAB " + err);
-              res.redirect("/dashboard");
-            } else {
-              if (examFoundLabs) {
-                res.render("dashboard", {
-                  isLogined: checkLoginValidation(req),
-                  user: req.user,
-                  foundLab: foundLab,
-                  examFoundLabs: examFoundLabs,
-                  getCurrentDateAndTime: new Date(new Date().toLocaleString("en-US", {
-                    timeZone: "Asia/Kolkata"
-                  }))
-                });
+    if (req.user.accountStatus === "pending") {
+      res.redirect("/verifyEmail");
+    } else if (req.user.accountStatus === "suspended") {
+      res.redirect("/logout");
+    } else {
+      PracticeLab.find({}, function(err, foundLab) {
+        if (err) {
+          console.log("ERROR SEARCHING PRACTICE LAB " + err);
+          res.redirect("/dashboard");
+        } else {
+          if (foundLab) {
+            ExamLab.find({}, function(err, examFoundLabs) {
+              if (err) {
+                console.log("ERROR FINDING EXAM LAB " + err);
+                res.redirect("/dashboard");
+              } else {
+                if (examFoundLabs) {
+                  res.render("dashboard", {
+                    isLogined: checkLoginValidation(req),
+                    user: req.user,
+                    foundLab: foundLab,
+                    examFoundLabs: examFoundLabs,
+                    getCurrentDateAndTime: new Date(new Date().toLocaleString("en-US", {
+                      timeZone: "Asia/Kolkata"
+                    }))
+                  });
+                }
               }
-            }
-          });
+            });
 
+          }
         }
-      }
-    });
+      });
+    }
   } else {
     res.redirect("/login");
   }
@@ -630,28 +779,33 @@ app.get("/dashboard", function(req, res) {
 // VIEW SHARED FILES ROUTE
 app.get("/sharedfiles", function(req, res) {
   if (req.isAuthenticated()) {
-    fs.readdir(__dirname + "/public/share/uploads", function(err, files) {
-      if (err) {
-        return console.log('Unable to scan directory: ' + err);
-      }
-      var allFiles = {};
-      files.forEach(function(file) {
-        const mydate = new Date(fs.statSync(__dirname + "/public/share/uploads/" + file).mtimeMs);
-        const month = ["January", "February", "March", "April", "May", "June",
-          "July", "August", "September", "October", "November", "December"
-        ][mydate.getMonth()];
-        if (file !== "nomedia") {
-          allFiles[file] = mydate.getDate() + " " + month + " " + mydate.getFullYear();
+    if (req.user.accountStatus === "pending") {
+      res.redirect("/verifyEmail");
+    } else if (req.user.accountStatus === "suspended") {
+      res.redirect("/logout");
+    } else {
+      fs.readdir(__dirname + "/public/share/uploads", function(err, files) {
+        if (err) {
+          return console.log('Unable to scan directory: ' + err);
         }
-      });
+        var allFiles = {};
+        files.forEach(function(file) {
+          const mydate = new Date(fs.statSync(__dirname + "/public/share/uploads/" + file).mtimeMs);
+          const month = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+          ][mydate.getMonth()];
+          if (file !== "nomedia") {
+            allFiles[file] = mydate.getDate() + " " + month + " " + mydate.getFullYear();
+          }
+        });
 
-      res.render("sharedFiles", {
-        isLogined: checkLoginValidation(req),
-        user: req.user,
-        allFiles: allFiles
+        res.render("sharedFiles", {
+          isLogined: checkLoginValidation(req),
+          user: req.user,
+          allFiles: allFiles
+        });
       });
-    });
-
+    }
   } else {
     res.redirect("/login");
   }
@@ -660,12 +814,18 @@ app.get("/sharedfiles", function(req, res) {
 // PROFILE SECTION ROUTE
 app.get("/profile", function(req, res) {
   if (req.isAuthenticated()) {
-    res.render("profile", {
-      isLogined: checkLoginValidation(req),
-      user: req.user,
-      alertType: "",
-      errors: []
-    });
+    if (req.user.accountStatus === "pending") {
+      res.redirect("/verifyEmail");
+    } else if (req.user.accountStatus === "suspended") {
+      res.redirect("/logout");
+    } else {
+      res.render("profile", {
+        isLogined: checkLoginValidation(req),
+        user: req.user,
+        alertType: "",
+        errors: []
+      });
+    }
   } else {
     res.redirect("/login");
   }
@@ -719,30 +879,36 @@ app.post("/submitfeedback", function(req, res) {
 // UPDATE INFO ROUTE
 app.post("/profile-info-update", function(req, res) {
   if (req.isAuthenticated()) {
-    User.findById(req.user.id, function(err, foundUser) {
-      if (err) {
-        console.log("ERROR FINDING USER " + err);
-        res.redirect("/profile");
-      } else {
-        if (foundUser) {
-          if (req.body.profile_bio) {
-            foundUser.bio = req.body.profile_bio;
-          }
-          if (req.body.profile_githubUsername) {
-            foundUser.githubURL = req.body.profile_githubUsername;
-          }
-          if (req.body.profile_linkedinUsername) {
-            foundUser.linkedinURL = req.body.profile_linkedinUsername;
-          }
-          foundUser.save(function(err) {
-            if (!err) {
-              res.redirect("/profile");
+    if (req.user.accountStatus === "pending") {
+      res.redirect("/verifyEmail");
+    } else if (req.user.accountStatus === "suspended") {
+      res.redirect("/logout");
+    } else {
+      User.findById(req.user.id, function(err, foundUser) {
+        if (err) {
+          console.log("ERROR FINDING USER " + err);
+          res.redirect("/profile");
+        } else {
+          if (foundUser) {
+            if (req.body.profile_bio) {
+              foundUser.bio = req.body.profile_bio;
             }
-          });
+            if (req.body.profile_githubUsername) {
+              foundUser.githubURL = req.body.profile_githubUsername;
+            }
+            if (req.body.profile_linkedinUsername) {
+              foundUser.linkedinURL = req.body.profile_linkedinUsername;
+            }
+            foundUser.save(function(err) {
+              if (!err) {
+                res.redirect("/profile");
+              }
+            });
 
+          }
         }
-      }
-    });
+      });
+    }
   } else {
     res.redirect("/login");
   }
@@ -789,51 +955,57 @@ app.post("/changePassword", function(req, res) {
   const profile_newPassword = req.body.profile_newPassword;
   const profile_confirmPassword = req.body.profile_confirmPassword;
   if (req.isAuthenticated()) {
-    if (!profile_currentPassword || !profile_newPassword || !profile_confirmPassword || profile_currentPassword.trim() === '' || profile_newPassword.trim() === '' || profile_confirmPassword.trim() === '') {
-      errors.push({
-        message: "Please enter all fields correctly!"
-      });
-    }
-    if (profile_newPassword && profile_newPassword.length < 8 || profile_confirmPassword && profile_confirmPassword.length < 8) {
-      errors.push({
-        message: "Password should 8-20 characters long!"
-      });
-    }
-    if (profile_newPassword != profile_confirmPassword) {
-      errors.push({
-        message: "Passwords don't match!"
-      });
-    }
-    if (errors.length > 0) {
-      res.render("profile", {
-        isLogined: checkLoginValidation(req),
-        user: req.user,
-        alertType: "danger",
-        errors: errors
-      });
+    if (req.user.accountStatus === "pending") {
+      res.redirect("/verifyEmail");
+    } else if (req.user.accountStatus === "suspended") {
+      res.redirect("/logout");
     } else {
-      req.user.changePassword(profile_currentPassword, profile_newPassword, function(err) {
-        if (err) {
-          console.log("CHANGE PASSWORD ERROR " + err);
-          res.render("profile", {
-            isLogined: checkLoginValidation(req),
-            user: req.user,
-            alertType: "danger",
-            errors: [{
-              message: "Wrong Current Password!"
-            }]
-          });
-        } else {
-          res.render("profile", {
-            isLogined: checkLoginValidation(req),
-            user: req.user,
-            alertType: "success",
-            errors: [{
-              message: "Password Successfully Changed!"
-            }]
-          });
-        }
-      });
+      if (!profile_currentPassword || !profile_newPassword || !profile_confirmPassword || profile_currentPassword.trim() === '' || profile_newPassword.trim() === '' || profile_confirmPassword.trim() === '') {
+        errors.push({
+          message: "Please enter all fields correctly!"
+        });
+      }
+      if (profile_newPassword && profile_newPassword.length < 8 || profile_confirmPassword && profile_confirmPassword.length < 8) {
+        errors.push({
+          message: "Password should 8-20 characters long!"
+        });
+      }
+      if (profile_newPassword != profile_confirmPassword) {
+        errors.push({
+          message: "Passwords don't match!"
+        });
+      }
+      if (errors.length > 0) {
+        res.render("profile", {
+          isLogined: checkLoginValidation(req),
+          user: req.user,
+          alertType: "danger",
+          errors: errors
+        });
+      } else {
+        req.user.changePassword(profile_currentPassword, profile_newPassword, function(err) {
+          if (err) {
+            console.log("CHANGE PASSWORD ERROR " + err);
+            res.render("profile", {
+              isLogined: checkLoginValidation(req),
+              user: req.user,
+              alertType: "danger",
+              errors: [{
+                message: "Wrong Current Password!"
+              }]
+            });
+          } else {
+            res.render("profile", {
+              isLogined: checkLoginValidation(req),
+              user: req.user,
+              alertType: "success",
+              errors: [{
+                message: "Password Successfully Changed!"
+              }]
+            });
+          }
+        });
+      }
     }
   } else {
     res.redirect("/login");
@@ -852,28 +1024,34 @@ app.get("/support", function(req, res) {
 // ROUTE TO ADMIN CONSOLE
 app.get("/powerzone", function(req, res) {
   if (req.isAuthenticated()) {
-    if (req.user.role != "superuser") {
-      res.render("adminPanel/403", {
-        isLogined: checkLoginValidation(req),
-        user: req.user
-      });
+    if (req.user.accountStatus === "pending") {
+      res.redirect("/verifyEmail");
+    } else if (req.user.accountStatus === "suspended") {
+      res.redirect("/logout");
     } else {
-      Promise.all([
-        User.countDocuments({}),
-        PracticeLab.countDocuments({}),
-        ExamLab.countDocuments({}),
-        Feedback.countDocuments({})
-      ]).then(function([userCount, practiceLabCount, examLabCount, feedbackCount]) {
-        res.render("adminPanel/adminDash", {
+      if (req.user.role != "superuser") {
+        res.render("adminPanel/403", {
           isLogined: checkLoginValidation(req),
-          user: req.user,
-          pageType: "dashboard",
-          userCount: userCount,
-          practiceLabCount: practiceLabCount,
-          examLabCount: examLabCount,
-          feedbackCount: feedbackCount
+          user: req.user
         });
-      });
+      } else {
+        Promise.all([
+          User.countDocuments({}),
+          PracticeLab.countDocuments({}),
+          ExamLab.countDocuments({}),
+          Feedback.countDocuments({})
+        ]).then(function([userCount, practiceLabCount, examLabCount, feedbackCount]) {
+          res.render("adminPanel/adminDash", {
+            isLogined: checkLoginValidation(req),
+            user: req.user,
+            pageType: "dashboard",
+            userCount: userCount,
+            practiceLabCount: practiceLabCount,
+            examLabCount: examLabCount,
+            feedbackCount: feedbackCount
+          });
+        });
+      }
     }
   } else {
     res.redirect("/login");
@@ -883,116 +1061,122 @@ app.get("/powerzone", function(req, res) {
 // ROUTE TO ADDITIONAL POWERZONE SETTINGS
 app.get("/powerzone/:setting", function(req, res) {
   if (req.isAuthenticated()) {
-    if (req.user.role != "superuser") {
-      res.render("403", {
-        isLogined: checkLoginValidation(req),
-        user: req.user
-      });
+    if (req.user.accountStatus === "pending") {
+      res.redirect("/verifyEmail");
+    } else if (req.user.accountStatus === "suspended") {
+      res.redirect("/logout");
     } else {
-      if (req.params.setting === "manageUsers") {
-        User.find({}, function(err, foundUsers) {
-          if (err) {
-            console.log("USER FIND ERROR " + err);
-            res.redirect("/powerzone");
-          } else {
-            if (foundUsers) {
-              res.render("adminPanel/adminManageUsers", {
-                isLogined: checkLoginValidation(req),
-                user: req.user,
-                pageType: "manageusers",
-                foundUsers: foundUsers
-              });
-            }
-          }
-        });
-      } else if (req.params.setting === "practiceLabs") {
-        PracticeLab.find({}, function(err, foundLab) {
-          if (err) {
-            console.log("ERROR FINDING PRACTICE LAB " + err);
-            res.redirect("/powerzone");
-          } else {
-            if (foundLab) {
-              res.render("adminPanel/adminPracticeLab", {
-                isLogined: checkLoginValidation(req),
-                user: req.user,
-                pageType: "plabs",
-                foundLab: foundLab
-              });
-            }
-          }
-        });
-      } else if (req.params.setting === "examLabs") {
-        ExamLab.find({}, function(err, foundLab) {
-          if (err) {
-            console.log("ERROR FINDING EXAM LAB " + err);
-            res.redirect("/powerzone");
-          } else {
-            if (foundLab) {
-              res.render("adminPanel/adminExamLab", {
-                isLogined: checkLoginValidation(req),
-                user: req.user,
-                pageType: "elabs",
-                foundLab: foundLab
-              });
-            }
-          }
-        });
-      } else if (req.params.setting === "userFeedbacks") {
-        Feedback.find({}, function(err, feedbacks) {
-          if (err) {
-            console.log("ERROR FINDING FEEDBACKS " + err);
-            res.redirect("/powerzone");
-          } else {
-            if (feedbacks) {
-              res.render("adminPanel/adminFeedbackPanel", {
-                isLogined: checkLoginValidation(req),
-                user: req.user,
-                pageType: "userfeedback",
-                feedbacks: feedbacks
-              });
-            }
-          }
-        });
-      } else if (req.params.setting === "labActivityLog") {
-        ActivityLog.find({}, function(err, foundLogs) {
-          if (err) {
-            console.log("ERROR FINDING ACTIVITY LOG " + err);
-            res.redirect("/powerzone/labActivityLog");
-          } else {
-            if (foundLogs) {
-              res.render("adminPanel/adminLabActivityLog", {
-                isLogined: checkLoginValidation(req),
-                user: req.user,
-                pageType: "labActivityLog",
-                activityLogs: foundLogs
-              });
-            }
-          }
-        });
-      } else if (req.params.setting === "shareFiles") {
-        fs.readdir(__dirname + "/public/share/uploads", function(err, files) {
-          if (err) {
-            return console.log('Unable to scan directory: ' + err);
-          }
-          var allFiles = {};
-          files.forEach(function(file) {
-            const mydate = new Date(fs.statSync(__dirname + "/public/share/uploads/" + file).mtimeMs);
-            const month = ["January", "February", "March", "April", "May", "June",
-              "July", "August", "September", "October", "November", "December"
-            ][mydate.getMonth()];
-            if (file !== "nomedia") {
-              allFiles[file] = mydate.getDate() + " " + month + " " + mydate.getFullYear();
-            }
-          });
-          res.render("adminPanel/adminShareFiles", {
-            isLogined: checkLoginValidation(req),
-            user: req.user,
-            pageType: "share",
-            allFiles: allFiles
-          });
+      if (req.user.role != "superuser") {
+        res.render("adminPanel/403", {
+          isLogined: checkLoginValidation(req),
+          user: req.user
         });
       } else {
-        res.redirect("/powerzone");
+        if (req.params.setting === "manageUsers") {
+          User.find({}, function(err, foundUsers) {
+            if (err) {
+              console.log("USER FIND ERROR " + err);
+              res.redirect("/powerzone");
+            } else {
+              if (foundUsers) {
+                res.render("adminPanel/adminManageUsers", {
+                  isLogined: checkLoginValidation(req),
+                  user: req.user,
+                  pageType: "manageusers",
+                  foundUsers: foundUsers
+                });
+              }
+            }
+          });
+        } else if (req.params.setting === "practiceLabs") {
+          PracticeLab.find({}, function(err, foundLab) {
+            if (err) {
+              console.log("ERROR FINDING PRACTICE LAB " + err);
+              res.redirect("/powerzone");
+            } else {
+              if (foundLab) {
+                res.render("adminPanel/adminPracticeLab", {
+                  isLogined: checkLoginValidation(req),
+                  user: req.user,
+                  pageType: "plabs",
+                  foundLab: foundLab
+                });
+              }
+            }
+          });
+        } else if (req.params.setting === "examLabs") {
+          ExamLab.find({}, function(err, foundLab) {
+            if (err) {
+              console.log("ERROR FINDING EXAM LAB " + err);
+              res.redirect("/powerzone");
+            } else {
+              if (foundLab) {
+                res.render("adminPanel/adminExamLab", {
+                  isLogined: checkLoginValidation(req),
+                  user: req.user,
+                  pageType: "elabs",
+                  foundLab: foundLab
+                });
+              }
+            }
+          });
+        } else if (req.params.setting === "userFeedbacks") {
+          Feedback.find({}, function(err, feedbacks) {
+            if (err) {
+              console.log("ERROR FINDING FEEDBACKS " + err);
+              res.redirect("/powerzone");
+            } else {
+              if (feedbacks) {
+                res.render("adminPanel/adminFeedbackPanel", {
+                  isLogined: checkLoginValidation(req),
+                  user: req.user,
+                  pageType: "userfeedback",
+                  feedbacks: feedbacks
+                });
+              }
+            }
+          });
+        } else if (req.params.setting === "labActivityLog") {
+          ActivityLog.find({}, function(err, foundLogs) {
+            if (err) {
+              console.log("ERROR FINDING ACTIVITY LOG " + err);
+              res.redirect("/powerzone/labActivityLog");
+            } else {
+              if (foundLogs) {
+                res.render("adminPanel/adminLabActivityLog", {
+                  isLogined: checkLoginValidation(req),
+                  user: req.user,
+                  pageType: "labActivityLog",
+                  activityLogs: foundLogs
+                });
+              }
+            }
+          });
+        } else if (req.params.setting === "shareFiles") {
+          fs.readdir(__dirname + "/public/share/uploads", function(err, files) {
+            if (err) {
+              return console.log('Unable to scan directory: ' + err);
+            }
+            var allFiles = {};
+            files.forEach(function(file) {
+              const mydate = new Date(fs.statSync(__dirname + "/public/share/uploads/" + file).mtimeMs);
+              const month = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+              ][mydate.getMonth()];
+              if (file !== "nomedia") {
+                allFiles[file] = mydate.getDate() + " " + month + " " + mydate.getFullYear();
+              }
+            });
+            res.render("adminPanel/adminShareFiles", {
+              isLogined: checkLoginValidation(req),
+              user: req.user,
+              pageType: "share",
+              allFiles: allFiles
+            });
+          });
+        } else {
+          res.redirect("/powerzone");
+        }
       }
     }
   } else {
@@ -1003,93 +1187,98 @@ app.get("/powerzone/:setting", function(req, res) {
 // POWERZONE POST ROUTES
 app.post("/powerzone/:setting", function(req, res) {
   if (req.isAuthenticated()) {
-    if (req.user.role != "superuser") {
-      res.render("403", {
-        isLogined: checkLoginValidation(req),
-        user: req.user
-      });
+    if (req.user.accountStatus === "pending") {
+      res.redirect("/verifyEmail");
+    } else if (req.user.accountStatus === "suspended") {
+      res.redirect("/logout");
     } else {
-      if (req.params.setting === "addPracticeLab") {
-        const newLab = new PracticeLab({
-          thumbnailUrl: req.body.thumbnailUrl,
-          catagory: req.body.catagory,
-          labName: req.body.labName,
-          labDescription: req.body.labDescription,
-          katacodaUsername: req.body.katacodaUsername,
-          katacodaScenarioName: req.body.katacodaScenarioName
+      if (req.user.role != "superuser") {
+        res.render("adminPanel/403", {
+          isLogined: checkLoginValidation(req),
+          user: req.user
         });
-        newLab.save(function(err) {
-          if (err) {
-            console.log("ERROR SAVING NEW PRACTICE LAB " + err);
-          }
-          res.redirect("/powerzone/practiceLabs");
-        });
-      } else if (req.params.setting === "editPracticeLab") {
-        PracticeLab.updateOne({
-          _id: req.body.labID
-        }, req.body, function(err) {
-          res.redirect("/powerzone/practiceLabs");
-        });
-      } else if (req.params.setting === "deletePracticeLab") {
-        PracticeLab.deleteOne({
-          _id: req.body.labID
-        }, function(err) {
-          res.redirect("/powerzone/practiceLabs");
-        });
-      } else if (req.params.setting === "suspendUser") {
-        if (req.body.accountStatus === "activate") {
-          User.updateOne({
-            _id: req.body.hiddenUserId
-          }, {
-            accountStatus: "active"
-          }, function(err) {
-            res.redirect("/powerzone/manageUsers");
-            console.log("ERROR UPDATING USER STATUS " + err);
+      } else {
+        if (req.params.setting === "addPracticeLab") {
+          const newLab = new PracticeLab({
+            thumbnailUrl: req.body.thumbnailUrl,
+            catagory: req.body.catagory,
+            labName: req.body.labName,
+            labDescription: req.body.labDescription,
+            katacodaUsername: req.body.katacodaUsername,
+            katacodaScenarioName: req.body.katacodaScenarioName
           });
-        } else if (req.body.accountStatus === "suspend") {
-          User.updateOne({
-            _id: req.body.hiddenUserId
-          }, {
-            accountStatus: "suspended"
+          newLab.save(function(err) {
+            if (err) {
+              console.log("ERROR SAVING NEW PRACTICE LAB " + err);
+            }
+            res.redirect("/powerzone/practiceLabs");
+          });
+        } else if (req.params.setting === "editPracticeLab") {
+          PracticeLab.updateOne({
+            _id: req.body.labID
+          }, req.body, function(err) {
+            res.redirect("/powerzone/practiceLabs");
+          });
+        } else if (req.params.setting === "deletePracticeLab") {
+          PracticeLab.deleteOne({
+            _id: req.body.labID
           }, function(err) {
-            res.redirect("/powerzone/manageUsers");
-            console.log("ERROR UPDATING USER STATUS " + err);
+            res.redirect("/powerzone/practiceLabs");
+          });
+        } else if (req.params.setting === "suspendUser") {
+          if (req.body.accountStatus === "activate") {
+            User.updateOne({
+              _id: req.body.hiddenUserId
+            }, {
+              accountStatus: "active"
+            }, function(err) {
+              res.redirect("/powerzone/manageUsers");
+              console.log("ERROR UPDATING USER STATUS " + err);
+            });
+          } else if (req.body.accountStatus === "suspend") {
+            User.updateOne({
+              _id: req.body.hiddenUserId
+            }, {
+              accountStatus: "suspended"
+            }, function(err) {
+              res.redirect("/powerzone/manageUsers");
+              console.log("ERROR UPDATING USER STATUS " + err);
+            });
+          }
+
+        } else if (req.params.setting === "addExamLab") {
+          const newLab = new ExamLab({
+            thumbnailUrl: req.body.thumbnailUrl,
+            catagory: req.body.catagory,
+            labName: req.body.labName,
+            examDetails: req.body.examDetails,
+            labDataMarkdown: req.body.labDataMarkdown,
+            labDataHTML: req.body.labDataHTML,
+            terminal_ip_and_port: req.body.terminal_ip_and_port,
+            startDateAndTime: req.body.startDateAndTime,
+            endDateAndTime: req.body.endDateAndTime
+          });
+          newLab.save(function(err) {
+            if (err) {
+              console.log("ERROR SAVING NEW EXAM LAB " + err);
+            }
+            res.redirect("/powerzone/examLabs");
+          });
+        } else if (req.params.setting === "editExamLabForm") {
+          ExamLab.updateOne({
+            _id: req.body.labID
+          }, req.body, function(err) {
+            res.redirect("/powerzone/examLabs");
+          });
+        } else if (req.params.setting === "deleteExamLab") {
+          ExamLab.deleteOne({
+            _id: req.body.labID
+          }, function(err) {
+            res.redirect("/powerzone/examLabs");
           });
         }
-
-      } else if (req.params.setting === "addExamLab") {
-        const newLab = new ExamLab({
-          thumbnailUrl: req.body.thumbnailUrl,
-          catagory: req.body.catagory,
-          labName: req.body.labName,
-          examDetails: req.body.examDetails,
-          labDataMarkdown: req.body.labDataMarkdown,
-          labDataHTML: req.body.labDataHTML,
-          terminal_ip_and_port: req.body.terminal_ip_and_port,
-          startDateAndTime: req.body.startDateAndTime,
-          endDateAndTime: req.body.endDateAndTime
-        });
-        newLab.save(function(err) {
-          if (err) {
-            console.log("ERROR SAVING NEW EXAM LAB " + err);
-          }
-          res.redirect("/powerzone/examLabs");
-        });
-      } else if (req.params.setting === "editExamLabForm") {
-        ExamLab.updateOne({
-          _id: req.body.labID
-        }, req.body, function(err) {
-          res.redirect("/powerzone/examLabs");
-        });
-      } else if (req.params.setting === "deleteExamLab") {
-        ExamLab.deleteOne({
-          _id: req.body.labID
-        }, function(err) {
-          res.redirect("/powerzone/examLabs");
-        });
       }
     }
-
   } else {
     res.redirect("/login");
   }
