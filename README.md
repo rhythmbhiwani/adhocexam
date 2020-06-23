@@ -40,6 +40,12 @@ IMGBB_API_KEY : API key of IMGBB. Request From https://api.imgbb.com/
 ```
 NODE_ENV : Values could be development or production. HTTPS will be required in production.
 ```
+```
+BOT_GMAIL_ID : Email address of gmail to send email.
+```
+```
+BOT_GMAIL_PASSWORD : Gmail Password
+```
 ##### All the ENV VARIABLES are compulsary
 ### Working Host
 [Check out website](http://adhocexams.herokuapp.com/)
