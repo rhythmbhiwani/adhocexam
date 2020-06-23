@@ -520,7 +520,7 @@ app.post("/signup", function(req, res) {
                 console.log("ERROR SAVING TOKEN " + err);
                 res.redirect("/signup");
               } else {
-                const content = "Thank you for signing up on AdHoc Networks Exam Portal.\nPlease follow this link to verify your email.\nThis link is valid only for 12 hours after requesting it.\nVerification Link: " + LOGIN_CALLBACK_URL + "/verify/" + token.token + "/" + user._id;
+                const content = "Thank you for signing up on AdHoc Networks Exam Portal.\nPlease follow this link to verify your email.\nThis link is valid only for 12 hours after requesting it.\nVerification Link: " + process.env.LOGIN_CALLBACK_URL + "/verify/" + token.token + "/" + user._id;
                 const mailOptions = getMailOptions(user.username, "AdHoc Networks - Verify you email", content);
                 transporter.sendMail(mailOptions, function(err) {
                   if (err) {
