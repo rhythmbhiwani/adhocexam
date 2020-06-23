@@ -890,15 +890,9 @@ app.post("/profile-info-update", function(req, res) {
           res.redirect("/profile");
         } else {
           if (foundUser) {
-            if (req.body.profile_bio) {
               foundUser.bio = req.body.profile_bio;
-            }
-            if (req.body.profile_githubUsername) {
               foundUser.githubURL = req.body.profile_githubUsername;
-            }
-            if (req.body.profile_linkedinUsername) {
               foundUser.linkedinURL = req.body.profile_linkedinUsername;
-            }
             foundUser.save(function(err) {
               if (!err) {
                 res.redirect("/profile");
@@ -1306,10 +1300,12 @@ app.get("*", function(req, res) {
 });
 
 // Error handler
-app.use(function(err, req, res, next) {
-  res.redirect('https://' + req.headers.host + req.url);
-  console.log("Redirected");
-})
+if (process.env.NODE_ENV !== "development") {
+  app.use(function(err, req, res, next) {
+    res.redirect('https://' + req.headers.host + req.url);
+    console.log("Redirected");
+  })
+}
 
 // LISTETING ON PORT
 const port = process.env.PORT || 3000;
