@@ -19,6 +19,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const nodemailer = require('nodemailer');
 const randomToken = require('random-token');
+const generateEmailBody = require('./verifyEmailTemplate');
 
 // NODEMAILER TRANSPORTER
 const transporter = nodemailer.createTransport({
@@ -195,7 +196,7 @@ function getMailOptions(to, subject, content) {
     from: process.env.BOT_GMAIL_ID,
     to: to,
     subject: subject,
-    text: content
+    html: content
   };
   return mailOptions;
 }
@@ -520,7 +521,7 @@ app.post("/signup", function(req, res) {
                 console.log("ERROR SAVING TOKEN " + err);
                 res.redirect("/signup");
               } else {
-                const content = "Thank you for signing up on AdHoc Networks Exam Portal.\nPlease follow this link to verify your email.\nThis link is valid only for 12 hours after requesting it.\nVerification Link: " + process.env.LOGIN_CALLBACK_URL + "/verify/" + token.token + "/" + user._id;
+                const content = generateEmailBody(user.local.fullname, process.env.LOGIN_CALLBACK_URL + "/verify/" + token.token + "/" + user._id);
                 const mailOptions = getMailOptions(user.username, "AdHoc Networks - Verify you email", content);
                 transporter.sendMail(mailOptions, function(err) {
                   if (err) {
@@ -711,7 +712,7 @@ app.get("/resendToken", function(req, res) {
           console.log("ERROR SAVING TOKEN " + err);
           res.redirect("/signup");
         } else {
-          const content = "Thank you for signing up on AdHoc Networks Exam Portal.\nPlease follow this link to verify your email.\nThis link is valid only for 12 hours after requesting it.\nVerification Link: http://" + req.headers.host + "/verify/" + token.token + "/" + req.user._id;
+          const content = generateEmailBody(req.user.local.fullname, process.env.LOGIN_CALLBACK_URL + "/verify/" + token.token + "/" + req.user._id);
           const mailOptions = getMailOptions(req.user.username, "AdHoc Networks - Verify you email", content);
           transporter.sendMail(mailOptions, function(err) {
             if (err) {

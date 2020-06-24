@@ -9,7 +9,9 @@
 * NODE.JS
 * EXPRESS FRAMEWORK
 * PASSPORT.JS
+* MONGODB
 * MONGOOSE
+* NODEMAILER
 ### AIM
 To give a platform for learners to practice, give exam, and download study materials.
 ### ENV VARIABLES
