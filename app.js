@@ -20,6 +20,7 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 const nodemailer = require('nodemailer');
 const randomToken = require('random-token');
 const generateEmailBody = require('./verifyEmailTemplate');
+const parseGithubUrl = require("parse-github-url")
 
 // NODEMAILER TRANSPORTER
 const transporter = nodemailer.createTransport({
@@ -892,7 +893,7 @@ app.post("/profile-info-update", function(req, res) {
         } else {
           if (foundUser) {
               foundUser.bio = req.body.profile_bio;
-              foundUser.githubURL = req.body.profile_githubUsername;
+              foundUser.githubURL = parseGithubUrl(req.body.profile_githubUsername).path;
               foundUser.linkedinURL = req.body.profile_linkedinUsername;
             foundUser.save(function(err) {
               if (!err) {
