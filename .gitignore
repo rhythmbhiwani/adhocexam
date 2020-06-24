@@ -114,7 +114,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-# Plain text js files
-public/js/adminScript.js
-public/js/script.js

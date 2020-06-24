@@ -821,11 +821,21 @@ app.get("/profile", function(req, res) {
     } else if (req.user.accountStatus === "suspended") {
       res.redirect("/logout");
     } else {
-      res.render("profile", {
-        isLogined: checkLoginValidation(req),
-        user: req.user,
-        alertType: "",
-        errors: []
+      ActivityLog.find({
+        userId: req.user._id
+      }, function(err, activity) {
+        if (err) {
+          console.log("ERROR FINDING ACTIVITY LOG " + err);
+          res.redirect("/profile");
+        } else {
+          res.render("profile", {
+            isLogined: checkLoginValidation(req),
+            user: req.user,
+            alertType: "",
+            errors: [],
+            activites: activity
+          });
+        }
       });
     }
   } else {
@@ -892,9 +902,9 @@ app.post("/profile-info-update", function(req, res) {
           res.redirect("/profile");
         } else {
           if (foundUser) {
-              foundUser.bio = req.body.profile_bio;
-              foundUser.githubURL = parseGithubUrl(req.body.profile_githubUsername).path;
-              foundUser.linkedinURL = req.body.profile_linkedinUsername;
+            foundUser.bio = req.body.profile_bio;
+            foundUser.githubURL = parseGithubUrl(req.body.profile_githubUsername).path;
+            foundUser.linkedinURL = req.body.profile_linkedinUsername;
             foundUser.save(function(err) {
               if (!err) {
                 res.redirect("/profile");
@@ -972,32 +982,62 @@ app.post("/changePassword", function(req, res) {
         });
       }
       if (errors.length > 0) {
-        res.render("profile", {
-          isLogined: checkLoginValidation(req),
-          user: req.user,
-          alertType: "danger",
-          errors: errors
+        ActivityLog.find({
+          userId: req.user._id
+        }, function(err, activity) {
+          if (err) {
+            console.log("ERROR FINDING ACTIVITY LOG " + err);
+            res.redirect("/profile");
+          } else {
+            res.render("profile", {
+              isLogined: checkLoginValidation(req),
+              user: req.user,
+              alertType: "danger",
+              errors: errors,
+              activites: activity
+            });
+          }
         });
       } else {
         req.user.changePassword(profile_currentPassword, profile_newPassword, function(err) {
           if (err) {
             console.log("CHANGE PASSWORD ERROR " + err);
-            res.render("profile", {
-              isLogined: checkLoginValidation(req),
-              user: req.user,
-              alertType: "danger",
-              errors: [{
-                message: "Wrong Current Password!"
-              }]
+            ActivityLog.find({
+              userId: req.user._id
+            }, function(err, activity) {
+              if (err) {
+                console.log("ERROR FINDING ACTIVITY LOG " + err);
+                res.redirect("/profile");
+              } else {
+                res.render("profile", {
+                  isLogined: checkLoginValidation(req),
+                  user: req.user,
+                  alertType: "danger",
+                  errors: [{
+                    message: "Wrong Current Password!"
+                  }],
+                  activites: activity
+                });
+              }
             });
           } else {
-            res.render("profile", {
-              isLogined: checkLoginValidation(req),
-              user: req.user,
-              alertType: "success",
-              errors: [{
-                message: "Password Successfully Changed!"
-              }]
+            ActivityLog.find({
+              userId: req.user._id
+            }, function(err, activity) {
+              if (err) {
+                console.log("ERROR FINDING ACTIVITY LOG " + err);
+                res.redirect("/profile");
+              } else {
+                res.render("profile", {
+                  isLogined: checkLoginValidation(req),
+                  user: req.user,
+                  alertType: "success",
+                  errors: [{
+                    message: "Password Successfully Changed!"
+                  }],
+                  activites: activity
+                });
+              }
             });
           }
         });
