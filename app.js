@@ -202,6 +202,25 @@ function getMailOptions(to, subject, content) {
   return mailOptions;
 }
 
+// FUNCTION TO CHECK FOR FIRST USER TO MAKE HIM SUPERUSER
+function checkFirstUserToMakeSuperUser(userId) {
+  checkFirstUserToMakeSuperUser = function(nothing) {};
+  User.countDocuments({}, function(err, count) {
+    if (count === 1) {
+      User.updateOne({
+        _id: userId
+      }, {
+        role: "superuser"
+      }, function(err) {
+        if (err) {
+          console.log("ERROR UPDATING ROLE TO SUPERUSER");
+        } else {
+          console.log("SUPERUSER CREATED");
+        }
+      });
+    }
+  });
+}
 
 // SETTING GOOGLE LOGIN STRATEGY
 passport.use(new GoogleStrategy({
@@ -377,7 +396,7 @@ app.get("/practice/:labID", function(req, res) {
                 userEmail: req.user[req.user.loginMethod].email,
                 labName: foundLab[0].labName,
                 labType: "Practice Lab",
-                labAccessDateAndTime: currentDateAndTime,
+                labAccessDateAndTime: currentDateAndTime.toString(),
                 labScore: "Not Applicable"
               });
               activity.save(function(err) {
@@ -754,6 +773,7 @@ app.get("/dashboard", function(req, res) {
                 console.log("ERROR FINDING EXAM LAB " + err);
                 res.redirect("/dashboard");
               } else {
+                checkFirstUserToMakeSuperUser(req.user._id);
                 if (examFoundLabs) {
                   res.render("dashboard", {
                     isLogined: checkLoginValidation(req),
