@@ -7,6 +7,8 @@ const ejs = require('ejs');
 const bodyParser = require("body-parser");
 const mongoose = require('mongoose');
 const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
+const helmet = require('helmet');
 const imgbbUploader = require('imgbb-uploader');
 const passport = require('passport');
 const multer = require('multer');
@@ -21,6 +23,15 @@ const nodemailer = require('nodemailer');
 const randomToken = require('random-token');
 const generateEmailBody = require('./verifyEmailTemplate');
 const parseGithubUrl = require("parse-github-url")
+const store = new MongoDBStore({
+  uri: process.env.MONGODB_SERVER_URL + "/adhocnwDB",
+  collection: 'mySessions'
+});
+
+// Catch session errors
+store.on('error', function(error) {
+ console.log(error);
+});
 
 // NODEMAILER TRANSPORTER
 const transporter = nodemailer.createTransport({
@@ -51,13 +62,15 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
+app.use(helmet());
 app.use(session({
   secret: process.env.SESSION_SECRET_KEY,
   cookie: {
     maxAge: 604800000
   }, //Age of cookie is 7 days
-  resave: false,
-  saveUninitialized: false
+  store: store,
+  resave: true,
+  saveUninitialized: true
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -1288,8 +1301,10 @@ app.post("/powerzone/:setting", function(req, res) {
             }, {
               accountStatus: "active"
             }, function(err) {
+              if (err) {
+                console.log("ERROR UPDATING USER STATUS " + err);
+              }
               res.redirect("/powerzone/manageUsers");
-              console.log("ERROR UPDATING USER STATUS " + err);
             });
           } else if (req.body.accountStatus === "suspend") {
             User.updateOne({
@@ -1297,8 +1312,10 @@ app.post("/powerzone/:setting", function(req, res) {
             }, {
               accountStatus: "suspended"
             }, function(err) {
+              if (err) {
+                console.log("ERROR UPDATING USER STATUS " + err);
+              }
               res.redirect("/powerzone/manageUsers");
-              console.log("ERROR UPDATING USER STATUS " + err);
             });
           }
 
