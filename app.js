@@ -21,7 +21,10 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const nodemailer = require('nodemailer');
 const randomToken = require('random-token');
-const generateEmailBody = require('./verifyEmailTemplate');
+const {
+  generateEmailBody,
+  generateResetEmailBody
+} = require('./verifyEmailTemplate');
 const parseGithubUrl = require("parse-github-url")
 const store = new MongoDBStore({
   uri: process.env.MONGODB_SERVER_URL + "/adhocnwDB",
@@ -30,7 +33,7 @@ const store = new MongoDBStore({
 
 // Catch session errors
 store.on('error', function(error) {
- console.log(error);
+  console.log(error);
 });
 
 // NODEMAILER TRANSPORTER
@@ -767,6 +770,176 @@ app.get("/resendToken", function(req, res) {
   }
 });
 
+// ROUTE FOR RESET PASSWORD PAGE
+app.get("/resetPassword", function(req, res) {
+  if (req.isAuthenticated()) {
+    res.redirect("/dashboard");
+  } else {
+    res.render("resetPassword", {
+      user: req.user,
+      isLogined: checkLoginValidation(req),
+      action: "resetrequest"
+    });
+  }
+});
+
+app.get("/resetPassword/:token/:userId", function(req, res){
+  if (req.isAuthenticated()) {
+    res.redirect("/dashboard");
+  } else {
+    Token.findOne({token: req.params.token, userId: req.params.userId}, function(err, foundToken){
+      if (err) {
+        console.log("ERROR FINDING TOKEN " + err);
+        res.render("resetPassword", {
+          user: req.user,
+          isLogined: checkLoginValidation(req),
+          action: "incorrectdata"
+        });
+      } else {
+        if (foundToken) {
+          res.render("resetPassword", {
+            user: req.user,
+            isLogined: checkLoginValidation(req),
+            foundToken: foundToken,
+            errors: [],
+            action: "changepassword"
+          });
+        } else {
+          res.render("resetPassword", {
+            user: req.user,
+            isLogined: checkLoginValidation(req),
+            action: "incorrectdata"
+          });
+        }
+      }
+    });
+  }
+});
+
+// POST ROUTE FOR RESET PASSWORD
+app.post("/resetPassword", function(req, res) {
+  if (req.isAuthenticated()) {
+    res.redirect("/dashboard");
+  } else {
+    if (req.body.action === "resetrequest") {
+      User.findOne({
+        username: req.body.username
+      }, function(err, foundUser) {
+        if (err) {
+          console.log("ERROR FINDING USER " + err);
+          res.redirect("/resetPassword");
+        } else {
+          if (foundUser) {
+            const token = new Token({
+              userId: foundUser._id,
+              token: randomToken(24)
+            });
+            token.save(function(err) {
+              if (err) {
+                console.log("ERROR SAVING TOKEN " + err);
+                res.redirect("/resetPassword");
+              } else {
+                const content = generateResetEmailBody(foundUser.local.fullname, process.env.LOGIN_CALLBACK_URL + "/resetPassword/" + token.token + "/" + foundUser._id);
+                const mailOptions = getMailOptions(foundUser.username, "AdHoc Networks - Forget your password", content);
+                transporter.sendMail(mailOptions, function(err) {
+                  if (err) {
+                    return res.status(500).send({
+                      msg: err.message
+                    });
+                  }
+                });
+              }
+            });
+          }
+        }
+      });
+      res.render("resetPassword", {
+        user: req.user,
+        isLogined: checkLoginValidation(req),
+        resetEmail: req.body.username,
+        action: "sentemail"
+      });
+    } else if (req.body.action === "changepassword") {
+      Token.findOne({token: req.body.hidden_verification_token, userId: req.body.hidden_user_id}, function(err, foundToken){
+        if (err) {
+          console.log("ERROR FINDING TOKEN " + err);
+          res.redirect("/resetPassword");
+        } else {
+          if (foundToken) {
+            let errors = [];
+            if (!req.body.new_password || !req.body.confirm_password || req.body.new_password.trim() === '' || req.body.confirm_password.trim() === '') {
+              errors.push({
+                message: "Please enter all fields correctly!"
+              });
+            }
+            if (req.body.new_password && req.body.new_password.length < 8 || req.body.confirm_password && req.body.confirm_password.length < 8) {
+              errors.push({
+                message: "Password should be 8-20 characters long!"
+              });
+            }
+            if (req.body.new_password != req.body.confirm_password) {
+              errors.push({
+                message: "Passwords don't match!"
+              });
+            }
+            if (errors.length > 0) {
+              res.render("resetPassword", {
+                user: req.user,
+                isLogined: checkLoginValidation(req),
+                resetEmail: req.body.username,
+                errors: errors,
+                foundToken: foundToken,
+                action: "changepassword"
+              });
+            } else {
+              User.findOne({_id: req.body.hidden_user_id}, function(err, foundUser){
+                if (err) {
+                  console.log("ERROR FINDING USER " + err);
+                  res.redirect("/resetPassword");
+                } else {
+                  if (foundUser) {
+                    foundUser.setPassword(req.body.new_password, function(err){
+                      if (err) {
+                        console.log("ERROR SETTING PASSWORD " + err);
+                        res.redirect("/resetPassword");
+                      } else {
+                        foundUser.save(function(err){
+                          if (err) {
+                            console.log("ERROR SETTING PASSWORD " + err);
+                            res.redirect("/resetPassword");
+                          } else {
+                            Token.deleteMany({userId: req.body.hidden_user_id}, function(err){
+                              if (err) {
+                                console.log("ERROR DELETING TOKENS " + err);
+                              }
+                            });
+                          }
+                        });
+                        res.redirect("/login");
+                      }
+                    });
+                  } else {
+                    res.redirect("/resetPassword");
+                  }
+                }
+              });
+            }
+          } else {
+            res.render("resetPassword", {
+              user: req.user,
+              isLogined: checkLoginValidation(req),
+              action: "incorrectdata"
+            });
+          }
+        }
+      });
+    } else {
+      res.redirect("/resetPassword");
+    }
+
+  }
+});
+
 // DASHBOARD ROUTE
 app.get("/dashboard", function(req, res) {
   if (req.isAuthenticated()) {
@@ -1006,7 +1179,7 @@ app.post("/changePassword", function(req, res) {
       }
       if (profile_newPassword && profile_newPassword.length < 8 || profile_confirmPassword && profile_confirmPassword.length < 8) {
         errors.push({
-          message: "Password should 8-20 characters long!"
+          message: "Password should be 8-20 characters long!"
         });
       }
       if (profile_newPassword != profile_confirmPassword) {
