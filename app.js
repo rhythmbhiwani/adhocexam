@@ -69,8 +69,8 @@ app.use(helmet());
 app.use(session({
   secret: process.env.SESSION_SECRET_KEY,
   cookie: {
-    maxAge: 604800000
-  }, //Age of cookie is 7 days
+    maxAge: 259200000
+  }, //Age of cookie is 3 days
   store: store,
   resave: true,
   saveUninitialized: true
