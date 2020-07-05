@@ -95,13 +95,13 @@ function addExamLab() {
       }
     }
   });
-  if (labDataArray[7].value.trim() !== "") {
+  if (labDataArray[10].value.trim() !== "") {
     $.ajax({
       type: "POST",
       dataType: "html",
       processData: false,
       url: "https://api.github.com/markdown/raw",
-      data: labDataArray[7].value,
+      data: labDataArray[10].value,
       contentType: "text/plain",
       success: function(data) {
         $("#AddExamLabForm").find("input[name=labDataHTML]").remove();
@@ -141,6 +141,9 @@ $('#EditExamLab').on('show.bs.modal', function(event) {
   const labDataMarkdown = button.data('labDataMarkdown');
   const startDateAndTime = button.data('startDateAndTime');
   const endDateAndTime = button.data('endDateAndTime');
+  const terminalSelector = button.data('terminalSelector');
+  const katacodaUsername = button.data('katacodaUsername');
+  const katacodaScenario = button.data('katacodaScenario');
   const labId = button.data('labId');
   const modal = $(this);
   modal.find('.modal-title').text('Edit Lab: ' + labName);
@@ -152,6 +155,9 @@ $('#EditExamLab').on('show.bs.modal', function(event) {
   modal.find('.modal-body #startDateAndTime').val(startDateAndTime);
   modal.find('.modal-body #endDateAndTime').val(endDateAndTime);
   modal.find('.modal-body #labDataMarkdown').val(labDataMarkdown);
+  modal.find('.modal-body #updated_katacoda_username').val(katacodaUsername);
+  modal.find('.modal-body #updated_katacoda_scenario').val(katacodaScenario);
+  $("#EditExamLab .modal-body input[name=terminal_selector][value=" + terminalSelector + "]").click();
   $('#EditExamLab #labID').val(labId);
 });
 
@@ -166,13 +172,13 @@ function editExamLab() {
       }
     }
   });
-  if (labDataArray[8].value.trim() !== "") {
+  if (labDataArray[11].value.trim() !== "") {
     $.ajax({
       type: "POST",
       dataType: "html",
       processData: false,
       url: "https://api.github.com/markdown/raw",
-      data: labDataArray[8].value,
+      data: labDataArray[11].value,
       contentType: "text/plain",
       success: function(data) {
         $("#editExamLabForm").find("input[name=labDataHTML]").remove();
@@ -208,3 +214,29 @@ $('#DeleteExamLab').on('show.bs.modal', function(event) {
   $('#deleteLabID').val(labId);
   $('#labToDeleteName').text(labName);
 })
+
+function addExamLabTerminalKatacoda() {
+  $("#placeholderForIpAndPort").addClass("d-none");
+  $("#placeholderForKatacoda").removeClass("d-none");
+  $("#placeholderForIpAndPort input").val("none");
+  $("#placeholderForKatacoda input").val("");
+}
+
+function addExamLabTerminalIpAndPort() {
+  $("#placeholderForIpAndPort").removeClass("d-none");
+  $("#placeholderForKatacoda").addClass("d-none");
+  $("#placeholderForKatacoda input").val("none");
+  $("#placeholderForIpAndPort input").val("");
+}
+
+function editExamLabTerminalKatacoda() {
+  $("#EditplaceholderForIpAndPort").addClass("d-none");
+  $("#EditplaceholderForKatacoda").removeClass("d-none");
+}
+
+function editExamLabTerminalIpAndPort() {
+  $("#EditplaceholderForIpAndPort").removeClass("d-none");
+  $("#EditplaceholderForKatacoda").addClass("d-none");
+}
+
+$("#AddNewExamLab #katacoda").click();

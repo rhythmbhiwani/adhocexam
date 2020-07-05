@@ -3,7 +3,6 @@
 <%- include("../partials/admin/adminTopbar") %>
 
 <script defer src="/js/obfuscatedadminscript.js" charset="utf-8"></script>
-
 <style>
   .error-custom {
     border-color: red;
@@ -41,8 +40,31 @@
                 <input type="text" class="form-control" id="labName" name="labName" placeholder="Ex. K8S EXAM 1" required="required">
               </div>
               <div class="form-group">
+                <div>
+                  <label>Terminal Type</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="terminal_selector" id="katacoda" value="katacoda" onchange="addExamLabTerminalKatacoda();">
+                  <label class="form-check-label" for="katacoda">Katacoda</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="terminal_selector" id="ip_and_port" value="ip_and_port" onchange="addExamLabTerminalIpAndPort();">
+                  <label class="form-check-label" for="ip_and_port">IP and PORT</label>
+                </div>
+              </div>
+              <div class="form-group d-none" id="placeholderForIpAndPort">
                 <label for="terminal_ip_and_port">Terminal IP and Port</label>
                 <input type="text" class="form-control" id="terminal_ip_and_port" name="terminal_ip_and_port" placeholder="Ex. 127.0.0.1:4200" required="required">
+              </div>
+              <div id="placeholderForKatacoda">
+                <div class="form-group">
+                  <label for="katacoda_username">Katacoda Username</label>
+                  <input type="text" class="form-control" id="katacoda_username" name="katacoda_username" placeholder="Ex. rhythmbhiwani" required="required">
+                </div>
+                <div class="form-group">
+                  <label for="katacoda_scenario">Katacoda Scenario</label>
+                  <input type="text" class="form-control" id="katacoda_scenario" name="katacoda_scenario" placeholder="Ex. exam-linux" required="required">
+                </div>
               </div>
               <div class="form-group">
                 <label for="thumbnailUrl">Thumbnail Url</label>
@@ -99,8 +121,31 @@
                 <input type="text" class="form-control" id="labName" name="labName" placeholder="Ex. K8S EXAM 1" required="required">
               </div>
               <div class="form-group">
+                <div>
+                  <label>Terminal Type</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="terminal_selector" id="update_katacoda" value="katacoda" onchange="editExamLabTerminalKatacoda();">
+                  <label class="form-check-label" for="update_katacoda">Katacoda</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="terminal_selector" id="update_ip_and_port" value="ip_and_port" onchange="editExamLabTerminalIpAndPort();">
+                  <label class="form-check-label" for="update_ip_and_port">IP and PORT</label>
+                </div>
+              </div>
+              <div class="form-group d-none" id="EditplaceholderForIpAndPort">
                 <label for="terminal_ip_and_port">Terminal IP and Port</label>
                 <input type="text" class="form-control" id="terminal_ip_and_port" name="terminal_ip_and_port" placeholder="Ex. 127.0.0.1:4200" required="required">
+              </div>
+              <div id="EditplaceholderForKatacoda">
+                <div class="form-group">
+                  <label for="updated_katacoda_username">Katacoda Username</label>
+                  <input type="text" class="form-control" id="updated_katacoda_username" name="katacoda_username" placeholder="Ex. rhythmbhiwani" required="required">
+                </div>
+                <div class="form-group">
+                  <label for="updated_katacoda_scenario">Katacoda Scenario</label>
+                  <input type="text" class="form-control" id="updated_katacoda_scenario" name="katacoda_scenario" placeholder="Ex. exam-linux" required="required">
+                </div>
               </div>
               <div class="form-group">
                 <label for="thumbnailUrl">Thumbnail Url</label>
@@ -151,7 +196,8 @@
         <a href="/questions/<%=lab._id%>" class="card-link btn btn-outline-dark">View Lab</a>
 
         <button type="button" class="card-link btn btn-outline-primary" data-toggle="modal" data-target="#EditExamLab" data-lab-name="<%=lab.labName%>" data-lab-catagory="<%=lab.catagory%>" data-exam-details="<%=lab.examDetails%>"
-          data-lab-data-markdown="<%=lab.labDataMarkdown%>" data-thumbnail-url="<%=lab.thumbnailUrl%>" data-terminal-ip-and-port="<%=lab.terminal_ip_and_port%>" data-lab-id="<%=lab._id%>" data-lab-data-html="<%=lab.labDataHTML%>" data-start-date-and-time="<%=lab.startDateAndTime%>" data-end-date-and-time="<%=lab.endDateAndTime%>">Edit</button>
+          data-lab-data-markdown="<%=lab.labDataMarkdown%>" data-thumbnail-url="<%=lab.thumbnailUrl%>" data-terminal-ip-and-port="<%=lab.terminal_ip_and_port%>" data-lab-id="<%=lab._id%>" data-lab-data-html="<%=lab.labDataHTML%>"
+          data-start-date-and-time="<%=lab.startDateAndTime%>" data-end-date-and-time="<%=lab.endDateAndTime%>" data-terminal-selector="<%=lab.terminal_selector%>" data-katacoda-username="<%=lab.katacoda_username%>" data-katacoda-scenario="<%=lab.katacoda_scenario%>">Edit</button>
       </div>
     </div>
     <% }); %>
@@ -184,7 +230,6 @@
 
 </div>
 <!-- /.container-fluid -->
-
 
 
 <%- include("../partials/admin/adminFooter") %>

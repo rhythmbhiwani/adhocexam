@@ -112,6 +112,9 @@ const PracticeLab = new mongoose.model("PracticeLab", practiceSchema);
 // EXAM LAB SCHEMA
 const examSchema = new mongoose.Schema({
   thumbnailUrl: String,
+  terminal_selector: String,
+  katacoda_username: String,
+  katacoda_scenario: String,
   catagory: String,
   labName: String,
   examDetails: String,
@@ -1495,6 +1498,9 @@ app.post("/powerzone/:setting", function(req, res) {
         } else if (req.params.setting === "addExamLab") {
           const newLab = new ExamLab({
             thumbnailUrl: req.body.thumbnailUrl,
+            terminal_selector: req.body.terminal_selector,
+            katacoda_scenario: req.body.katacoda_scenario,
+            katacoda_username: req.body.katacoda_username,
             catagory: req.body.catagory,
             labName: req.body.labName,
             examDetails: req.body.examDetails,
