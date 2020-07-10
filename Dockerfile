@@ -4,4 +4,4 @@ COPY . /app
 WORKDIR /app
 RUN npm install
 RUN npm install pm2 --global
-ENTRYPOINT pm2-runtime start app.js -i max
+ENTRYPOINT pm2-runtime start app.js
