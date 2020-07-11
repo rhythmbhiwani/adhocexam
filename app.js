@@ -351,10 +351,10 @@ app.get("/questions/:labID", function(req, res) {
           res.redirect("/dashboard");
         } else {
           if (foundLab) {
-            const currentDateAndTime = new Date(new Date().toLocaleString("en-US", {
+            const currentDateAndTime = new Date().toLocaleString("en-US", {
               timeZone: "Asia/Kolkata"
-            }));
-            if (new Date(foundLab[0].startDateAndTime) <= currentDateAndTime && new Date(foundLab[0].endDateAndTime) >= currentDateAndTime || req.user.role === "superuser") {
+            });
+            if (new Date(foundLab[0].startDateAndTime) <= new Date(currentDateAndTime) && new Date(foundLab[0].endDateAndTime) >= new Date(currentDateAndTime) || req.user.role === "superuser") {
               if (req.user.role !== "superuser") {
                 const activity = new ActivityLog({
                   userId: req.user._id,
@@ -406,9 +406,9 @@ app.get("/practice/:labID", function(req, res) {
         } else {
           if (foundLab) {
             if (req.user.role !== "superuser") {
-              const currentDateAndTime = new Date(new Date().toLocaleString("en-US", {
+              const currentDateAndTime = new Date().toLocaleString("en-US", {
                 timeZone: "Asia/Kolkata"
-              }));
+              });
               const activity = new ActivityLog({
                 userId: req.user._id,
                 userLoginMethod: req.user.loginMethod,
