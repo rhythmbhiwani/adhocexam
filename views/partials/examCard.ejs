@@ -1,6 +1,5 @@
 <% let countLabs = 0; if (examFoundLabs.length > 0) { %>
 <% examFoundLabs.forEach(function(examFoundLab){ %>
-<% console.log(new Date(examFoundLab.startDateAndTime),new Date(getCurrentDateAndTime),Date(examFoundLab.endDateAndTime)) %>
 <% if(new Date(examFoundLab.startDateAndTime) <= new Date(getCurrentDateAndTime) && new Date(examFoundLab.endDateAndTime) >= new Date(getCurrentDateAndTime)) { %>
 <% countLabs++; %>
 <div class="xl:w-1/4 md:w-1/2 p-4">
