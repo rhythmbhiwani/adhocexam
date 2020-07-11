@@ -786,11 +786,14 @@ app.get("/resetPassword", function(req, res) {
   }
 });
 
-app.get("/resetPassword/:token/:userId", function(req, res){
+app.get("/resetPassword/:token/:userId", function(req, res) {
   if (req.isAuthenticated()) {
     res.redirect("/dashboard");
   } else {
-    Token.findOne({token: req.params.token, userId: req.params.userId}, function(err, foundToken){
+    Token.findOne({
+      token: req.params.token,
+      userId: req.params.userId
+    }, function(err, foundToken) {
       if (err) {
         console.log("ERROR FINDING TOKEN " + err);
         res.render("resetPassword", {
@@ -863,7 +866,10 @@ app.post("/resetPassword", function(req, res) {
         action: "sentemail"
       });
     } else if (req.body.action === "changepassword") {
-      Token.findOne({token: req.body.hidden_verification_token, userId: req.body.hidden_user_id}, function(err, foundToken){
+      Token.findOne({
+        token: req.body.hidden_verification_token,
+        userId: req.body.hidden_user_id
+      }, function(err, foundToken) {
         if (err) {
           console.log("ERROR FINDING TOKEN " + err);
           res.redirect("/resetPassword");
@@ -895,23 +901,27 @@ app.post("/resetPassword", function(req, res) {
                 action: "changepassword"
               });
             } else {
-              User.findOne({_id: req.body.hidden_user_id}, function(err, foundUser){
+              User.findOne({
+                _id: req.body.hidden_user_id
+              }, function(err, foundUser) {
                 if (err) {
                   console.log("ERROR FINDING USER " + err);
                   res.redirect("/resetPassword");
                 } else {
                   if (foundUser) {
-                    foundUser.setPassword(req.body.new_password, function(err){
+                    foundUser.setPassword(req.body.new_password, function(err) {
                       if (err) {
                         console.log("ERROR SETTING PASSWORD " + err);
                         res.redirect("/resetPassword");
                       } else {
-                        foundUser.save(function(err){
+                        foundUser.save(function(err) {
                           if (err) {
                             console.log("ERROR SETTING PASSWORD " + err);
                             res.redirect("/resetPassword");
                           } else {
-                            Token.deleteMany({userId: req.body.hidden_user_id}, function(err){
+                            Token.deleteMany({
+                              userId: req.body.hidden_user_id
+                            }, function(err) {
                               if (err) {
                                 console.log("ERROR DELETING TOKENS " + err);
                               }
@@ -1112,7 +1122,7 @@ app.post("/profile-info-update", function(req, res) {
         } else {
           if (foundUser) {
             foundUser.bio = req.body.profile_bio;
-            foundUser.githubURL = parseGithubUrl(req.body.profile_githubUsername).path;
+            foundUser.githubURL = req.body.profile_githubUsername.trim() == "" ? "" : parseGithubUrl(req.body.profile_githubUsername).path;
             foundUser.linkedinURL = req.body.profile_linkedinUsername;
             foundUser.save(function(err) {
               if (!err) {
