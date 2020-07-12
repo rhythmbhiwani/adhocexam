@@ -129,6 +129,7 @@ const ExamLab = new mongoose.model("ExamLab", examSchema);
 
 // FEEDBACK SCHEMA
 const feedbackSchema = new mongoose.Schema({
+  userid: String,
   name: String,
   email: String,
   message: String
@@ -1099,6 +1100,7 @@ app.get("/logout", function(req, res) {
 // FEEDBACK SUBMIT ROUTE
 app.post("/submitfeedback", function(req, res) {
   const newFeedback = new Feedback({
+    userid: req.body.userid,
     name: req.body.feedback_author,
     email: req.body.feedback_email,
     message: req.body.feedback_message

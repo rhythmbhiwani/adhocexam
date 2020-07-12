@@ -154,6 +154,7 @@
       <p class="lg:w-2/3 mx-auto leading-relaxed text-base">Feel free to contact us for any query, feedback or suggestions.</p>
     </div>
     <form action="/submitfeedback" method="post">
+      <input type="hidden" name="userid" value=<%=isLogined === true?user._id:"anonymous"%>>
       <div class="lg:w-1/2 md:w-2/3 mx-auto">
         <div class="flex flex-wrap -m-2">
           <div class="p-2 w-1/2">
