@@ -128,6 +128,11 @@ label {
   color: red;
 }
 
+.question-md details div {
+  padding-left: 5%;
+  border: 1px solid;
+}
+
 /* SIGNUP AND LOGIN PAGE */
 .login-and-signup-class .form-control {
   font-size: 16px;
