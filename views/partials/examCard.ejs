@@ -6,7 +6,7 @@
     <img class="h-40 rounded w-full object-cover object-center mb-6" src="<%=examFoundLab.thumbnailUrl%>" alt="content" style="filter: grayscale(100%);">
     <h3 class="tracking-widest text-blue-500 text-xs font-medium title-font text-uppercase">UPCOMING</h3>
     <h2 class="text-lg text-gray-900 font-medium title-font mb-4 text-uppercase"><%=examFoundLab.labName%></h2>
-    <p class="leading-relaxed text-base">Exam will begin at <%=examFoundLab.startDateAndTime%></p>
+    <p class="leading-relaxed text-base">Exam will begin at <%=new Date(examFoundLab.startDateAndTime).toLocaleDateString("en-US",{weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour12: true, hour: "2-digit", minute: "2-digit", second: "2-digit"})%></p>
   </div>
 </div>
 <% countLabs++; %>
