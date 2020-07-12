@@ -1571,7 +1571,6 @@ app.get("*", function(req, res) {
 if (process.env.NODE_ENV !== "development") {
   app.use(function(err, req, res, next) {
     res.redirect('https://' + req.headers.host + req.url);
-    console.log("Redirected");
   })
 }
 
