@@ -1,5 +1,5 @@
-FROM node:12.18.1
-MAINTAINER rhythmbhiwani@gmail.com
+FROM node:12.18.3
+LABEL email="rhythmbhiwani@gmail.com" 
 COPY . /app
 WORKDIR /app
 RUN npm install
