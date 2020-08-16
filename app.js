@@ -175,7 +175,7 @@ passport.deserializeUser(function(id, done) {
   });
 });
 
-// SCHEMA FOR VERIFICATION TOKENS
+// SCHEMA FOR VERIFICATION TOKEN
 const tokenSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
