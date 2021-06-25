@@ -1,0 +1,11 @@
+GOOGLE_OAUTH_CLIENT_ID=867854229177-orr5ncpiboiem8mii27jmnklksdkudej.apps.googleusercontent.com
+GOOGLE_OAUTH_CLIENT_SECRET=qGSExOl0mPjWrYEhjG6YLG1l
+FACEBOOK_APP_ID=866485510423908
+FACEBOOK_APP_SECRET=6c64ea0b70ebcfd9f304189397ce858d
+SESSION_SECRET_KEY=L3ppuYbIewtBWTMR
+MONGODB_SERVER_URL=mongodb+srv://superuser:5YeojB8yVUwA4GaD@adhocnwdb-owhbn.mongodb.net
+LOGIN_CALLBACK_URL=http://localhost:3000
+IMGBB_API_KEY=0d9b14d7a1dd1ec1b13e1b699c977d09
+NODE_ENV=development
+BOT_GMAIL_ID=adhocnetworks.examportal@gmail.com
+BOT_GMAIL_PASSWORD=MrAshutoshhSingh786
