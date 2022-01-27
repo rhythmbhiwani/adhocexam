@@ -59,7 +59,6 @@ const fileShare = multer({
 
 // DEFINING APP AND ITS PARAMETERS
 const app = express();
-app.use(httpsOnly(true));
 app.use(
   bodyParser.urlencoded({
     extended: true,
