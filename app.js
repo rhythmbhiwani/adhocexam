@@ -27,7 +27,7 @@ const {
 } = require("./verifyEmailTemplate");
 const parseGithubUrl = require("parse-github-url");
 const store = new MongoDBStore({
-  uri: process.env.MONGODB_SERVER_URL + "/adhocnwDB",
+  uri: process.env.MONGODB_SERVER_URL + "/adhocnw",
   collection: "mySessions",
 });
 
@@ -634,7 +634,8 @@ app.post("/signup", function (req, res) {
                     );
                     transporter.sendMail(mailOptions, function (err) {
                       if (err) {
-                        return res.status(500).send({
+                        console.log(err);
+                        res.status(500).send({
                           msg: err.message,
                         });
                       }
@@ -849,7 +850,8 @@ app.get("/resendToken", function (req, res) {
           );
           transporter.sendMail(mailOptions, function (err) {
             if (err) {
-              return res.status(500).send({
+              console.log(err);
+              res.status(500).send({
                 msg: err.message,
               });
             }
