@@ -27,7 +27,7 @@ const {
 } = require("./verifyEmailTemplate");
 const parseGithubUrl = require("parse-github-url");
 const store = new MongoDBStore({
-  uri: process.env.MONGODB_SERVER_URL + "/adhocnw",
+  uri: process.env.MONGODB_SERVER_URL,
   collection: "mySessions",
 });
 
