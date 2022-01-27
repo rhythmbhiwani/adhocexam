@@ -83,7 +83,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // DEFINING MONGOOSE FOR DATABASE
-mongoose.connect(process.env.MONGODB_SERVER_URL + "/adhocnwDB", {
+mongoose.connect(process.env.MONGODB_SERVER_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   autoIndex: false, //To turn off username as unique in database
