@@ -50,4 +50,4 @@ BOT_GMAIL_PASSWORD : Gmail Password
 ```
 ##### All the ENV VARIABLES are compulsary
 ### Working Host
-[Check out website](http://adhocexams.herokuapp.com/)
+[Check out website](http://adhocexams.rhythmbhiwani.me/)
