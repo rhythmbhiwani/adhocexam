@@ -205,7 +205,7 @@ function deleteFile(req) {
 // FUNCTION TO GET MAIL OPTIONS
 function getMailOptions(to, subject, content) {
   const mailOptions = {
-    from: "onboarding@resend.dev",
+    from: "no-reply@mail.adhocexams.rhythmbhiwani.in",
     to: to,
     subject: subject,
     html: content,
