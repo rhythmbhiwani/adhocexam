@@ -1,3 +1,16 @@
 <%- include("partials/header") -%>
-<iframe src="https://www.katacoda.com/embed/<%=foundLab.katacodaUsername%>/<%=foundLab.katacodaScenarioName%>/?v=2&amp;embed=true&amp;ui=inline&amp;host=<%=dashboardIP%>&amp;url=<%=dashboardIP%>&amp;target=null&amp;color=1a202c&amp;secondary=1a202c&amp;font=Helvetica%20Neue&amp;fontheader=Helvetica%20Neue&amp;ctaurl=<%=dashboardIP%>/dashboard&amp;ctatext=Back+to+dashboard&amp;code=" frameborder="0" allowtransparency="true" allowfullscreen="true" style="min-height: 250px; height: 100%; width: 100%; border: 0px; background-color: transparent;"></iframe>
+<div
+  class="p-4 w-full h-full flex items-center justify-center text-center text-2xl flex-col space-y-5"
+>
+  <span
+    >At the moment, access to Labs is unavailable due to the shutdown of the
+    Katacoda service.</span
+  >
+  <a
+    class="inline-flex text-white bg-teal-500 border-0 py-2 px-6 focus:outline-none hover:bg-teal-600 rounded text-lg home-button"
+    href="/dashboard"
+    >Dashboard</a
+  >
+</div>
+<!-- <iframe src="https://www.katacoda.com/embed/<%=foundLab.katacodaUsername%>/<%=foundLab.katacodaScenarioName%>/?v=2&amp;embed=true&amp;ui=inline&amp;host=<%=dashboardIP%>&amp;url=<%=dashboardIP%>&amp;target=null&amp;color=1a202c&amp;secondary=1a202c&amp;font=Helvetica%20Neue&amp;fontheader=Helvetica%20Neue&amp;ctaurl=<%=dashboardIP%>/dashboard&amp;ctatext=Back+to+dashboard&amp;code=" frameborder="0" allowtransparency="true" allowfullscreen="true" style="min-height: 250px; height: 100%; width: 100%; border: 0px; background-color: transparent;"></iframe> -->
 <%- include("partials/footer") -%>
