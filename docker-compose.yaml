@@ -1,7 +1,9 @@
-version: '3.1'
+version: "3.1"
 services:
   webserver:
-    image: rhythmbhiwani/adhocexam
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
     environment:
       GOOGLE_OAUTH_CLIENT_ID: XXXXXXXXXXXXXXXXX
@@ -16,4 +18,4 @@ services:
       BOT_GMAIL_ID: example@example.com
       BOT_GMAIL_PASSWORD: XXXXXXXXXXXXXX
     ports:
-      - XXXX:3000
+      - 3000:3000
