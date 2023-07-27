@@ -1,9 +1,6 @@
 // IMPORTING REQUIRED LIBRARIES
 require("dotenv").config();
 const express = require("express");
-const httpsOnly = require("https-only");
-const https = require("https");
-const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const session = require("express-session");
@@ -26,6 +23,7 @@ const {
   generateResetEmailBody,
 } = require("./verifyEmailTemplate");
 const parseGithubUrl = require("parse-github-url");
+const morgan = require("morgan");
 const store = new MongoDBStore({
   uri: process.env.MONGODB_SERVER_URL,
   collection: "mySessions",
@@ -64,6 +62,7 @@ app.use(
     extended: true,
   })
 );
+app.use(morgan("dev"));
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.use(helmet());
@@ -1243,7 +1242,7 @@ app.get("/login", function (req, res) {
 });
 
 app.get("/logout", function (req, res) {
-  req.logout();
+  req.logout(() => console.log("LOGGED OUT"));
   res.redirect("/");
 });
 
@@ -1807,5 +1806,5 @@ if (process.env.NODE_ENV !== "development") {
 // LISTETING ON PORT
 const port = process.env.PORT || 3000;
 app.listen(port, function () {
-  console.log("SERVER STARTED");
+  console.log("SERVER STARTED AT PORT", port);
 });
