@@ -15,7 +15,6 @@ services:
       LOGIN_CALLBACK_URL: http://XXXXXXXXXXX:XXX
       IMGBB_API_KEY: XXXXXXXXXXXXXXXXX
       NODE_ENV: development
-      BOT_GMAIL_ID: example@example.com
-      BOT_GMAIL_PASSWORD: XXXXXXXXXXXXXX
+      RESEND_KEY: something
     ports:
       - 3000:3000
