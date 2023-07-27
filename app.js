@@ -10,13 +10,13 @@ const imgbbUploader = require("imgbb-uploader");
 const passport = require("passport");
 const multer = require("multer");
 const fs = require("fs");
+const Resend = require("resend").Resend;
 const imguploadpath = multer({
   dest: __dirname + "/public/temp/uploads",
 });
 const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
-const nodemailer = require("nodemailer");
 const randomToken = require("random-token");
 const {
   generateEmailBody,
@@ -34,14 +34,7 @@ store.on("error", function (error) {
   console.log(error);
 });
 
-// NODEMAILER TRANSPORTER
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.BOT_GMAIL_ID,
-    pass: process.env.BOT_GMAIL_PASSWORD,
-  },
-});
+const resend = new Resend(process.env.RESEND_KEY);
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -212,7 +205,7 @@ function deleteFile(req) {
 // FUNCTION TO GET MAIL OPTIONS
 function getMailOptions(to, subject, content) {
   const mailOptions = {
-    from: process.env.BOT_GMAIL_ID,
+    from: "onboarding@resend.dev",
     to: to,
     subject: subject,
     html: content,
@@ -630,14 +623,7 @@ app.post("/signup", function (req, res) {
                       "AdHoc Networks - Verify you email",
                       content
                     );
-                    transporter.sendMail(mailOptions, function (err) {
-                      if (err) {
-                        console.log(err);
-                        res.status(500).send({
-                          msg: err.message,
-                        });
-                      }
-                    });
+                    resend.emails.send(mailOptions);
                   }
                 });
                 passport.authenticate("local")(req, res, function () {
@@ -846,14 +832,7 @@ app.get("/resendToken", function (req, res) {
             "AdHoc Networks - Verify you email",
             content
           );
-          transporter.sendMail(mailOptions, function (err) {
-            if (err) {
-              console.log(err);
-              res.status(500).send({
-                msg: err.message,
-              });
-            }
-          });
+          resend.emails.send(mailOptions);
         }
       });
       res.render("verifyEmail", {
@@ -957,13 +936,7 @@ app.post("/resetPassword", function (req, res) {
                     "AdHoc Networks - Forget your password",
                     content
                   );
-                  transporter.sendMail(mailOptions, function (err) {
-                    if (err) {
-                      return res.status(500).send({
-                        msg: err.message,
-                      });
-                    }
-                  });
+                  resend.emails.send(mailOptions);
                 }
               });
             }
